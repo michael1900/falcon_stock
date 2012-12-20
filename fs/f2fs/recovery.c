@@ -40,7 +40,12 @@ static struct fsync_inode_entry *get_fsync_inode(struct list_head *head,
 
 static int recover_dentry(struct page *ipage, struct inode *inode)
 {
+<<<<<<< HEAD
 	struct f2fs_inode *raw_inode = F2FS_INODE(ipage);
+=======
+	struct f2fs_node *raw_node = F2FS_NODE(ipage);
+	struct f2fs_inode *raw_inode = &(raw_node->i);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	nid_t pino = le32_to_cpu(raw_inode->i_pino);
 	struct f2fs_dir_entry *de;
 	struct qstr name;
@@ -52,9 +57,12 @@ static int recover_dentry(struct page *ipage, struct inode *inode)
 	if (!dir) {
 		dir = f2fs_iget(inode->i_sb, pino);
 		if (IS_ERR(dir)) {
+<<<<<<< HEAD
 			f2fs_msg(inode->i_sb, KERN_INFO,
 						"%s: f2fs_iget failed: %ld",
 						__func__, PTR_ERR(dir));
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			err = PTR_ERR(dir);
 			goto out;
 		}
@@ -64,12 +72,15 @@ static int recover_dentry(struct page *ipage, struct inode *inode)
 
 	name.len = le32_to_cpu(raw_inode->i_namelen);
 	name.name = raw_inode->i_name;
+<<<<<<< HEAD
 
 	if (unlikely(name.len > F2FS_NAME_LEN)) {
 		WARN_ON(1);
 		err = -ENAMETOOLONG;
 		goto out;
 	}
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 retry:
 	de = f2fs_find_entry(dir, &name, &page);
 	if (de && inode->i_ino == le32_to_cpu(de->ino))
@@ -98,16 +109,27 @@ out_unmap_put:
 	kunmap(page);
 	f2fs_put_page(page, 0);
 out:
+<<<<<<< HEAD
 	f2fs_msg(inode->i_sb, KERN_DEBUG,
 			"%s: ino = %x, name = %s, dir = %lx, err = %d",
 			__func__, ino_of_node(ipage), raw_inode->i_name,
+=======
+	f2fs_msg(inode->i_sb, KERN_NOTICE, "recover_inode and its dentry: "
+			"ino = %x, name = %s, dir = %lx, err = %d",
+			ino_of_node(ipage), raw_inode->i_name,
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			IS_ERR(dir) ? 0 : dir->i_ino, err);
 	return err;
 }
 
 static int recover_inode(struct inode *inode, struct page *node_page)
 {
+<<<<<<< HEAD
 	struct f2fs_inode *raw_inode = F2FS_INODE(node_page);
+=======
+	struct f2fs_node *raw_node = F2FS_NODE(node_page);
+	struct f2fs_inode *raw_inode = &(raw_node->i);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	if (!IS_INODE(node_page))
 		return 0;
@@ -124,7 +146,11 @@ static int recover_inode(struct inode *inode, struct page *node_page)
 	if (is_dent_dnode(node_page))
 		return recover_dentry(node_page, inode);
 
+<<<<<<< HEAD
 	f2fs_msg(inode->i_sb, KERN_DEBUG, "recover_inode: ino = %x, name = %s",
+=======
+	f2fs_msg(inode->i_sb, KERN_NOTICE, "recover_inode: ino = %x, name = %s",
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			ino_of_node(node_page), raw_inode->i_name);
 	return 0;
 }
@@ -150,9 +176,15 @@ static int find_fsync_dnodes(struct f2fs_sb_info *sbi, struct list_head *head)
 	while (1) {
 		struct fsync_inode_entry *entry;
 
+<<<<<<< HEAD
 		err = f2fs_submit_page_bio(sbi, page, blkaddr, READ_SYNC);
 		if (err)
 			return err;
+=======
+		err = f2fs_readpage(sbi, page, blkaddr, READ_SYNC);
+		if (err)
+			goto out;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		lock_page(page);
 
@@ -170,12 +202,17 @@ static int find_fsync_dnodes(struct f2fs_sb_info *sbi, struct list_head *head)
 		} else {
 			if (IS_INODE(page) && is_dent_dnode(page)) {
 				err = recover_inode_page(sbi, page);
+<<<<<<< HEAD
 				if (err) {
 					f2fs_msg(sbi->sb, KERN_INFO,
 					 "%s: recover_inode_page failed: %d",
 								__func__, err);
 					break;
 				}
+=======
+				if (err)
+					break;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			}
 
 			/* add this fsync inode to the list */
@@ -188,9 +225,12 @@ static int find_fsync_dnodes(struct f2fs_sb_info *sbi, struct list_head *head)
 			entry->inode = f2fs_iget(sbi->sb, ino_of_node(page));
 			if (IS_ERR(entry->inode)) {
 				err = PTR_ERR(entry->inode);
+<<<<<<< HEAD
 				f2fs_msg(sbi->sb, KERN_INFO,
 					"%s: f2fs_iget failed: %d",
 					__func__, err);
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 				kmem_cache_free(fsync_entry_slab, entry);
 				break;
 			}
@@ -199,20 +239,31 @@ static int find_fsync_dnodes(struct f2fs_sb_info *sbi, struct list_head *head)
 		entry->blkaddr = blkaddr;
 
 		err = recover_inode(entry->inode, page);
+<<<<<<< HEAD
 		if (err && err != -ENOENT) {
 			f2fs_msg(sbi->sb, KERN_INFO,
 				"%s: recover_inode failed: %d",
 				__func__, err);
 			break;
 		}
+=======
+		if (err && err != -ENOENT)
+			break;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 next:
 		/* check next segment */
 		blkaddr = next_blkaddr_of_node(page);
 	}
+<<<<<<< HEAD
 
 	unlock_page(page);
 	__free_pages(page, 0);
 
+=======
+	unlock_page(page);
+out:
+	__free_pages(page, 0);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return err;
 }
 
@@ -243,12 +294,15 @@ static int check_index_in_prev_nodes(struct f2fs_sb_info *sbi,
 	block_t bidx;
 	int i;
 
+<<<<<<< HEAD
 	if (segno >= TOTAL_SEGS(sbi)) {
 		f2fs_msg(sbi->sb, KERN_ERR, "invalid segment number %u", segno);
 		if (f2fs_handle_error(sbi))
 			return -EIO;
 	}
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	sentry = get_seg_entry(sbi, segno);
 	if (!f2fs_test_bit(blkoff, sentry->cur_valid_map))
 		return 0;
@@ -295,6 +349,7 @@ static int check_index_in_prev_nodes(struct f2fs_sb_info *sbi,
 	ino = ino_of_node(node_page);
 	f2fs_put_page(node_page, 1);
 
+<<<<<<< HEAD
 	/* Skip nodes with circular references */
 	if (ino == dn->inode->i_ino) {
 		f2fs_msg(sbi->sb, KERN_ERR, "%s: node %x has circular inode %x",
@@ -303,6 +358,8 @@ static int check_index_in_prev_nodes(struct f2fs_sb_info *sbi,
 		return -EDEADLK;
 	}
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	/* Deallocate previous index in the node page */
 	inode = f2fs_iget(sbi->sb, ino);
 	if (IS_ERR(inode))
@@ -326,9 +383,12 @@ static int do_recover_data(struct f2fs_sb_info *sbi, struct inode *inode,
 	struct node_info ni;
 	int err = 0, recovered = 0;
 
+<<<<<<< HEAD
 	if (recover_inline_data(inode, page))
 		goto out;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	start = start_bidx_of_node(ofs_of_node(page), fi);
 	if (IS_INODE(page))
 		end = start + ADDRS_PER_INODE(fi);
@@ -336,15 +396,22 @@ static int do_recover_data(struct f2fs_sb_info *sbi, struct inode *inode,
 		end = start + ADDRS_PER_BLOCK;
 
 	f2fs_lock_op(sbi);
+<<<<<<< HEAD
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	set_new_dnode(&dn, inode, NULL, NULL, 0);
 
 	err = get_dnode_of_data(&dn, start, ALLOC_NODE);
 	if (err) {
 		f2fs_unlock_op(sbi);
+<<<<<<< HEAD
 		f2fs_msg(sbi->sb, KERN_INFO,
 			"%s: get_dnode_of_data failed: %d", __func__, err);
 		goto out;
+=======
+		return err;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	}
 
 	wait_on_page_writeback(dn.node_page);
@@ -364,10 +431,13 @@ static int do_recover_data(struct f2fs_sb_info *sbi, struct inode *inode,
 				err = reserve_new_block(&dn);
 				/* We should not get -ENOSPC */
 				f2fs_bug_on(err);
+<<<<<<< HEAD
 				if (err)
 					f2fs_msg(sbi->sb, KERN_INFO,
 						"%s: reserve_new_block failed: %d",
 						__func__, err);
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			}
 
 			/* Check the previous node page having this index */
@@ -399,10 +469,17 @@ static int do_recover_data(struct f2fs_sb_info *sbi, struct inode *inode,
 err:
 	f2fs_put_dnode(&dn);
 	f2fs_unlock_op(sbi);
+<<<<<<< HEAD
 out:
 	f2fs_msg(sbi->sb, KERN_DEBUG,
 		"recover_data: ino = %lx, recovered = %d blocks, err = %d",
 		inode->i_ino, recovered, err);
+=======
+
+	f2fs_msg(sbi->sb, KERN_NOTICE, "recover_data: ino = %lx, "
+			"recovered_data = %d blocks, err = %d",
+			inode->i_ino, recovered, err);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return err;
 }
 
@@ -420,7 +497,11 @@ static int recover_data(struct f2fs_sb_info *sbi,
 	blkaddr = NEXT_FREE_BLKADDR(sbi, curseg);
 
 	/* read node page */
+<<<<<<< HEAD
 	page = alloc_page(GFP_F2FS_ZERO);
+=======
+	page = alloc_page(GFP_NOFS | __GFP_ZERO);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	if (!page)
 		return -ENOMEM;
 
@@ -429,6 +510,7 @@ static int recover_data(struct f2fs_sb_info *sbi,
 	while (1) {
 		struct fsync_inode_entry *entry;
 
+<<<<<<< HEAD
 		err = f2fs_submit_page_bio(sbi, page, blkaddr, READ_SYNC);
 		if (err) {
 			f2fs_msg(sbi->sb, KERN_INFO,
@@ -436,6 +518,11 @@ static int recover_data(struct f2fs_sb_info *sbi,
 				__func__, err);
 			return err;
 		}
+=======
+		err = f2fs_readpage(sbi, page, blkaddr, READ_SYNC);
+		if (err)
+			goto out;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		lock_page(page);
 
@@ -447,12 +534,17 @@ static int recover_data(struct f2fs_sb_info *sbi,
 			goto next;
 
 		err = do_recover_data(sbi, entry->inode, page, blkaddr);
+<<<<<<< HEAD
 		if (err) {
 			f2fs_msg(sbi->sb, KERN_INFO,
 				"%s: do_recover_data failed: %d",
 				__func__, err);
 			break;
 		}
+=======
+		if (err)
+			break;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		if (entry->blkaddr == blkaddr) {
 			iput(entry->inode);
@@ -463,8 +555,13 @@ next:
 		/* check next segment */
 		blkaddr = next_blkaddr_of_node(page);
 	}
+<<<<<<< HEAD
 
 	unlock_page(page);
+=======
+	unlock_page(page);
+out:
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	__free_pages(page, 0);
 
 	if (!err)
@@ -480,7 +577,11 @@ int recover_fsync_data(struct f2fs_sb_info *sbi)
 
 	fsync_entry_slab = f2fs_kmem_cache_create("f2fs_fsync_inode_entry",
 			sizeof(struct fsync_inode_entry), NULL);
+<<<<<<< HEAD
 	if (!fsync_entry_slab)
+=======
+	if (unlikely(!fsync_entry_slab))
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return -ENOMEM;
 
 	INIT_LIST_HEAD(&inode_list);
@@ -488,11 +589,16 @@ int recover_fsync_data(struct f2fs_sb_info *sbi)
 	/* step #1: find fsynced inode numbers */
 	sbi->por_doing = true;
 	err = find_fsync_dnodes(sbi, &inode_list);
+<<<<<<< HEAD
 	if (err) {
 		f2fs_msg(sbi->sb, KERN_INFO,
 			"%s: find_fsync_dnodes failed: %d", __func__, err);
 		goto out;
 	}
+=======
+	if (err)
+		goto out;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	if (list_empty(&inode_list))
 		goto out;
@@ -501,19 +607,28 @@ int recover_fsync_data(struct f2fs_sb_info *sbi)
 
 	/* step #2: recover data */
 	err = recover_data(sbi, &inode_list, CURSEG_WARM_NODE);
+<<<<<<< HEAD
 	if (!list_empty(&inode_list)) {
 		f2fs_handle_error(sbi);
 		err = -EIO;
 	}
+=======
+	f2fs_bug_on(!list_empty(&inode_list));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 out:
 	destroy_fsync_dnodes(&inode_list);
 	kmem_cache_destroy(fsync_entry_slab);
 	sbi->por_doing = false;
+<<<<<<< HEAD
 	if (!err && need_writecp) {
 		f2fs_msg(sbi->sb, KERN_INFO, "recovery complete");
 		write_checkpoint(sbi, false);
 	} else
 		f2fs_msg(sbi->sb, KERN_ERR, "recovery did not fully complete");
 
+=======
+	if (!err && need_writecp)
+		write_checkpoint(sbi, false);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return err;
 }

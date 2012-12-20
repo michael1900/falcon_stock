@@ -33,20 +33,29 @@ static int f2fs_vm_page_mkwrite(struct vm_area_struct *vma,
 	struct page *page = vmf->page;
 	struct inode *inode = vma->vm_file->f_path.dentry->d_inode;
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+<<<<<<< HEAD
+=======
+	block_t old_blk_addr;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	struct dnode_of_data dn;
 	int err;
 
 	f2fs_balance_fs(sbi);
 
+<<<<<<< HEAD
 	/* Wait if fs is frozen. This is racy so we check again later on
 	 * and retry if the fs has been frozen after the page lock has
 	 * been acquired
 	 */
 	vfs_check_frozen(inode->i_sb, SB_FREEZE_WRITE);
+=======
+	sb_start_pagefault(inode->i_sb);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	/* block allocation */
 	f2fs_lock_op(sbi);
 	set_new_dnode(&dn, inode, NULL, NULL, 0);
+<<<<<<< HEAD
 	err = f2fs_reserve_block(&dn, page->index);
 	f2fs_unlock_op(sbi);
 	if (err)
@@ -57,6 +66,32 @@ static int f2fs_vm_page_mkwrite(struct vm_area_struct *vma,
 	if (unlikely(page->mapping != inode->i_mapping ||
 			page_offset(page) > i_size_read(inode) ||
 			!PageUptodate(page))) {
+=======
+	err = get_dnode_of_data(&dn, page->index, ALLOC_NODE);
+	if (err) {
+		f2fs_unlock_op(sbi);
+		goto out;
+	}
+
+	old_blk_addr = dn.data_blkaddr;
+
+	if (old_blk_addr == NULL_ADDR) {
+		err = reserve_new_block(&dn);
+		if (err) {
+			f2fs_put_dnode(&dn);
+			f2fs_unlock_op(sbi);
+			goto out;
+		}
+	}
+	f2fs_put_dnode(&dn);
+	f2fs_unlock_op(sbi);
+
+	file_update_time(vma->vm_file);
+	lock_page(page);
+	if (page->mapping != inode->i_mapping ||
+			page_offset(page) > i_size_read(inode) ||
+			!PageUptodate(page)) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		unlock_page(page);
 		err = -EFAULT;
 		goto out;
@@ -82,12 +117,22 @@ mapped:
 	/* fill the page */
 	wait_on_page_writeback(page);
 out:
+<<<<<<< HEAD
+=======
+	sb_end_pagefault(inode->i_sb);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return block_page_mkwrite_return(err);
 }
 
 static const struct vm_operations_struct f2fs_file_vm_ops = {
+<<<<<<< HEAD
 	.fault        = filemap_fault,
 	.page_mkwrite = f2fs_vm_page_mkwrite,
+=======
+	.fault		= filemap_fault,
+	.page_mkwrite	= f2fs_vm_page_mkwrite,
+	.remap_pages	= generic_file_remap_pages,
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 };
 
 static int get_parent_ino(struct inode *inode, nid_t *pino)
@@ -117,12 +162,20 @@ int f2fs_sync_file(struct file *file, loff_t start, loff_t end, int datasync)
 	int ret = 0;
 	bool need_cp = false;
 	struct writeback_control wbc = {
+<<<<<<< HEAD
 		.sync_mode = WB_SYNC_NONE,
+=======
+		.sync_mode = WB_SYNC_ALL,
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		.nr_to_write = LONG_MAX,
 		.for_reclaim = 0,
 	};
 
+<<<<<<< HEAD
 	if (unlikely(f2fs_readonly(inode->i_sb)))
+=======
+	if (f2fs_readonly(inode->i_sb))
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return 0;
 
 	trace_f2fs_sync_file_enter(inode);
@@ -204,7 +257,11 @@ int truncate_data_blocks_range(struct dnode_of_data *dn, int count)
 	raw_node = F2FS_NODE(dn->node_page);
 	addr = blkaddr_in_node(raw_node) + ofs;
 
+<<<<<<< HEAD
 	for (; count > 0; count--, addr++, dn->ofs_in_node++) {
+=======
+	for ( ; count > 0; count--, addr++, dn->ofs_in_node++) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		block_t blkaddr = le32_to_cpu(*addr);
 		if (blkaddr == NULL_ADDR)
 			continue;
@@ -243,7 +300,11 @@ static void truncate_partial_data_page(struct inode *inode, u64 from)
 		return;
 
 	lock_page(page);
+<<<<<<< HEAD
 	if (unlikely(page->mapping != inode->i_mapping)) {
+=======
+	if (page->mapping != inode->i_mapping) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		f2fs_put_page(page, 1);
 		return;
 	}
@@ -253,12 +314,17 @@ static void truncate_partial_data_page(struct inode *inode, u64 from)
 	f2fs_put_page(page, 1);
 }
 
+<<<<<<< HEAD
 int truncate_blocks(struct inode *inode, u64 from)
+=======
+static int truncate_blocks(struct inode *inode, u64 from)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	unsigned int blocksize = inode->i_sb->s_blocksize;
 	struct dnode_of_data dn;
 	pgoff_t free_from;
+<<<<<<< HEAD
 	int count = 0, err = 0;
 
 	trace_f2fs_truncate_blocks_enter(inode, from);
@@ -266,11 +332,21 @@ int truncate_blocks(struct inode *inode, u64 from)
 	if (f2fs_has_inline_data(inode))
 		goto done;
 
+=======
+	int count = 0;
+	int err;
+
+	trace_f2fs_truncate_blocks_enter(inode, from);
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	free_from = (pgoff_t)
 			((from + blocksize - 1) >> (sbi->log_blocksize));
 
 	f2fs_lock_op(sbi);
+<<<<<<< HEAD
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	set_new_dnode(&dn, inode, NULL, NULL, 0);
 	err = get_dnode_of_data(&dn, free_from, LOOKUP_NODE);
 	if (err) {
@@ -298,7 +374,11 @@ int truncate_blocks(struct inode *inode, u64 from)
 free_next:
 	err = truncate_inode_blocks(inode, free_from);
 	f2fs_unlock_op(sbi);
+<<<<<<< HEAD
 done:
+=======
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	/* lastly zero out the first data page */
 	truncate_partial_data_page(inode, from);
 
@@ -308,20 +388,27 @@ done:
 
 void f2fs_truncate(struct inode *inode)
 {
+<<<<<<< HEAD
 	int err;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	if (!(S_ISREG(inode->i_mode) || S_ISDIR(inode->i_mode) ||
 				S_ISLNK(inode->i_mode)))
 		return;
 
 	trace_f2fs_truncate(inode);
 
+<<<<<<< HEAD
 	err = truncate_blocks(inode, i_size_read(inode));
 	if (err) {
 		f2fs_msg(inode->i_sb, KERN_ERR, "truncate failed with %d",
 				err);
 		f2fs_handle_error(F2FS_SB(inode->i_sb));
 	} else {
+=======
+	if (!truncate_blocks(inode, i_size_read(inode))) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		inode->i_mtime = inode->i_ctime = CURRENT_TIME;
 		mark_inode_dirty(inode);
 	}
@@ -371,14 +458,18 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 {
 	struct inode *inode = dentry->d_inode;
 	struct f2fs_inode_info *fi = F2FS_I(inode);
+<<<<<<< HEAD
 	struct f2fs_inode_info *pfi = F2FS_I(dentry->d_parent->d_inode);
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	int err;
 
 	err = inode_change_ok(inode, attr);
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	if (IS_ANDROID_EMU(sbi, fi, pfi))
 		f2fs_android_emu(sbi, inode, &attr->ia_uid, &attr->ia_gid,
 				 &attr->ia_mode);
@@ -389,6 +480,10 @@ int f2fs_setattr(struct dentry *dentry, struct iattr *attr)
 		if (err)
 			return err;
 
+=======
+	if ((attr->ia_valid & ATTR_SIZE) &&
+			attr->ia_size != i_size_read(inode)) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		truncate_setsize(inode, attr->ia_size);
 		f2fs_truncate(inode);
 		f2fs_balance_fs(F2FS_SB(inode->i_sb));
@@ -466,16 +561,23 @@ int truncate_hole(struct inode *inode, pgoff_t pg_start, pgoff_t pg_end)
 	return 0;
 }
 
+<<<<<<< HEAD
 static int punch_hole(struct inode *inode, loff_t offset, loff_t len)
+=======
+static int punch_hole(struct inode *inode, loff_t offset, loff_t len, int mode)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	pgoff_t pg_start, pg_end;
 	loff_t off_start, off_end;
 	int ret = 0;
 
+<<<<<<< HEAD
 	ret = f2fs_convert_inline_data(inode, MAX_INLINE_DATA + 1);
 	if (ret)
 		return ret;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	pg_start = ((unsigned long long) offset) >> PAGE_CACHE_SHIFT;
 	pg_end = ((unsigned long long) offset + len) >> PAGE_CACHE_SHIFT;
 
@@ -510,6 +612,15 @@ static int punch_hole(struct inode *inode, loff_t offset, loff_t len)
 		}
 	}
 
+<<<<<<< HEAD
+=======
+	if (!(mode & FALLOC_FL_KEEP_SIZE) &&
+		i_size_read(inode) <= (offset + len)) {
+		i_size_write(inode, offset);
+		mark_inode_dirty(inode);
+	}
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return ret;
 }
 
@@ -526,10 +637,13 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 	if (ret)
 		return ret;
 
+<<<<<<< HEAD
 	ret = f2fs_convert_inline_data(inode, offset + len);
 	if (ret)
 		return ret;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	pg_start = ((unsigned long long) offset) >> PAGE_CACHE_SHIFT;
 	pg_end = ((unsigned long long) offset + len) >> PAGE_CACHE_SHIFT;
 
@@ -541,10 +655,29 @@ static int expand_inode_data(struct inode *inode, loff_t offset,
 
 		f2fs_lock_op(sbi);
 		set_new_dnode(&dn, inode, NULL, NULL, 0);
+<<<<<<< HEAD
 		ret = f2fs_reserve_block(&dn, index);
 		f2fs_unlock_op(sbi);
 		if (ret)
 			break;
+=======
+		ret = get_dnode_of_data(&dn, index, ALLOC_NODE);
+		if (ret) {
+			f2fs_unlock_op(sbi);
+			break;
+		}
+
+		if (dn.data_blkaddr == NULL_ADDR) {
+			ret = reserve_new_block(&dn);
+			if (ret) {
+				f2fs_put_dnode(&dn);
+				f2fs_unlock_op(sbi);
+				break;
+			}
+		}
+		f2fs_put_dnode(&dn);
+		f2fs_unlock_op(sbi);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		if (pg_start == pg_end)
 			new_size = offset + len;
@@ -575,7 +708,11 @@ static long f2fs_fallocate(struct file *file, int mode,
 		return -EOPNOTSUPP;
 
 	if (mode & FALLOC_FL_PUNCH_HOLE)
+<<<<<<< HEAD
 		ret = punch_hole(inode, offset, len);
+=======
+		ret = punch_hole(inode, offset, len, mode);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	else
 		ret = expand_inode_data(inode, offset, len, mode);
 

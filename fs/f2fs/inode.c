@@ -42,11 +42,17 @@ static void __get_inode_rdev(struct inode *inode, struct f2fs_inode *ri)
 	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode) ||
 			S_ISFIFO(inode->i_mode) || S_ISSOCK(inode->i_mode)) {
 		if (ri->i_addr[0])
+<<<<<<< HEAD
 			inode->i_rdev =
 				old_decode_dev(le32_to_cpu(ri->i_addr[0]));
 		else
 			inode->i_rdev =
 				new_decode_dev(le32_to_cpu(ri->i_addr[1]));
+=======
+			inode->i_rdev = old_decode_dev(le32_to_cpu(ri->i_addr[0]));
+		else
+			inode->i_rdev = new_decode_dev(le32_to_cpu(ri->i_addr[1]));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	}
 }
 
@@ -54,6 +60,7 @@ static void __set_inode_rdev(struct inode *inode, struct f2fs_inode *ri)
 {
 	if (S_ISCHR(inode->i_mode) || S_ISBLK(inode->i_mode)) {
 		if (old_valid_dev(inode->i_rdev)) {
+<<<<<<< HEAD
 			ri->i_addr[0] =
 				cpu_to_le32(old_encode_dev(inode->i_rdev));
 			ri->i_addr[1] = 0;
@@ -61,6 +68,13 @@ static void __set_inode_rdev(struct inode *inode, struct f2fs_inode *ri)
 			ri->i_addr[0] = 0;
 			ri->i_addr[1] =
 				cpu_to_le32(new_encode_dev(inode->i_rdev));
+=======
+			ri->i_addr[0] = cpu_to_le32(old_encode_dev(inode->i_rdev));
+			ri->i_addr[1] = 0;
+		} else {
+			ri->i_addr[0] = 0;
+			ri->i_addr[1] = cpu_to_le32(new_encode_dev(inode->i_rdev));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			ri->i_addr[2] = 0;
 		}
 	}
@@ -71,6 +85,10 @@ static int do_read_inode(struct inode *inode)
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	struct f2fs_inode_info *fi = F2FS_I(inode);
 	struct page *node_page;
+<<<<<<< HEAD
+=======
+	struct f2fs_node *rn;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	struct f2fs_inode *ri;
 
 	/* Check if ino is within scope */
@@ -84,11 +102,20 @@ static int do_read_inode(struct inode *inode)
 	if (IS_ERR(node_page))
 		return PTR_ERR(node_page);
 
+<<<<<<< HEAD
 	ri = F2FS_INODE(node_page);
 
 	inode->i_mode = le16_to_cpu(ri->i_mode);
 	inode->i_uid  = le32_to_cpu(ri->i_uid);
 	inode->i_gid  = le32_to_cpu(ri->i_gid);
+=======
+	rn = F2FS_NODE(node_page);
+	ri = &(rn->i);
+
+	inode->i_mode = le16_to_cpu(ri->i_mode);
+	i_uid_write(inode, le32_to_cpu(ri->i_uid));
+	i_gid_write(inode, le32_to_cpu(ri->i_gid));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	set_nlink(inode, le32_to_cpu(ri->i_links));
 	inode->i_size = le64_to_cpu(ri->i_size);
 	inode->i_blocks = le64_to_cpu(ri->i_blocks);
@@ -177,6 +204,7 @@ bad_inode:
 
 void update_inode(struct inode *inode, struct page *node_page)
 {
+<<<<<<< HEAD
 	struct f2fs_inode *ri;
 
 	f2fs_wait_on_page_writeback(node_page, NODE);
@@ -187,6 +215,20 @@ void update_inode(struct inode *inode, struct page *node_page)
 	ri->i_advise = F2FS_I(inode)->i_advise;
 	ri->i_uid = cpu_to_le32(inode->i_uid);
 	ri->i_gid = cpu_to_le32(inode->i_gid);
+=======
+	struct f2fs_node *rn;
+	struct f2fs_inode *ri;
+
+	f2fs_wait_on_page_writeback(node_page, NODE, false);
+
+	rn = F2FS_NODE(node_page);
+	ri = &(rn->i);
+
+	ri->i_mode = cpu_to_le16(inode->i_mode);
+	ri->i_advise = F2FS_I(inode)->i_advise;
+	ri->i_uid = cpu_to_le32(i_uid_read(inode));
+	ri->i_gid = cpu_to_le32(i_gid_read(inode));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	ri->i_links = cpu_to_le32(inode->i_nlink);
 	ri->i_size = cpu_to_le64(i_size_read(inode));
 	ri->i_blocks = cpu_to_le64(inode->i_blocks);
@@ -272,6 +314,10 @@ void f2fs_evict_inode(struct inode *inode)
 	if (inode->i_nlink || is_bad_inode(inode))
 		goto no_delete;
 
+<<<<<<< HEAD
+=======
+	sb_start_intwrite(inode->i_sb);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	set_inode_flag(F2FS_I(inode), FI_NO_ALLOC);
 	i_size_write(inode, 0);
 
@@ -280,9 +326,17 @@ void f2fs_evict_inode(struct inode *inode)
 
 	f2fs_lock_op(sbi);
 	remove_inode_page(inode);
+<<<<<<< HEAD
 	stat_dec_inline_inode(inode);
 	f2fs_unlock_op(sbi);
 
 no_delete:
 	end_writeback(inode);
+=======
+	f2fs_unlock_op(sbi);
+
+	sb_end_intwrite(inode->i_sb);
+no_delete:
+	clear_inode(inode);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }

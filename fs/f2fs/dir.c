@@ -90,8 +90,12 @@ static bool early_match_name(const char *name, size_t namelen,
 
 static struct f2fs_dir_entry *find_in_block(struct page *dentry_page,
 			const char *name, size_t namelen, int *max_slots,
+<<<<<<< HEAD
 			f2fs_hash_t namehash, struct page **res_page,
 			bool nocase)
+=======
+			f2fs_hash_t namehash, struct page **res_page)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	struct f2fs_dir_entry *de;
 	unsigned long bit_pos, end_pos, next_pos;
@@ -104,6 +108,7 @@ static struct f2fs_dir_entry *find_in_block(struct page *dentry_page,
 		de = &dentry_blk->dentry[bit_pos];
 		slots = GET_DENTRY_SLOTS(le16_to_cpu(de->name_len));
 
+<<<<<<< HEAD
 		if (nocase) {
 			if ((le16_to_cpu(de->name_len) == namelen) &&
 			    !strncasecmp(dentry_blk->filename[bit_pos],
@@ -112,6 +117,9 @@ static struct f2fs_dir_entry *find_in_block(struct page *dentry_page,
 				goto found;
 			}
 		} else if (early_match_name(name, namelen, namehash, de)) {
+=======
+		if (early_match_name(name, namelen, namehash, de)) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			if (!memcmp(dentry_blk->filename[bit_pos],
 							name, namelen)) {
 				*res_page = dentry_page;
@@ -144,7 +152,10 @@ static struct f2fs_dir_entry *find_in_level(struct inode *dir,
 	unsigned int bidx, end_block;
 	struct page *dentry_page;
 	struct f2fs_dir_entry *de = NULL;
+<<<<<<< HEAD
 	struct f2fs_sb_info *sbi = F2FS_SB(dir->i_sb);
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	bool room = false;
 	int max_slots = 0;
 
@@ -157,8 +168,11 @@ static struct f2fs_dir_entry *find_in_level(struct inode *dir,
 	end_block = bidx + nblock;
 
 	for (; bidx < end_block; bidx++) {
+<<<<<<< HEAD
 		bool nocase = false;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		/* no need to allocate new dentry pages to all the indices */
 		dentry_page = find_data_page(dir, bidx, true);
 		if (IS_ERR(dentry_page)) {
@@ -166,6 +180,7 @@ static struct f2fs_dir_entry *find_in_level(struct inode *dir,
 			continue;
 		}
 
+<<<<<<< HEAD
 		if (test_opt(sbi, ANDROID_EMU) &&
 		    (sbi->android_emu_flags & F2FS_ANDROID_EMU_NOCASE) &&
 		    F2FS_I(dir)->i_advise & FADVISE_ANDROID_EMU)
@@ -174,6 +189,10 @@ static struct f2fs_dir_entry *find_in_level(struct inode *dir,
 		de = find_in_block(dentry_page, name, namelen,
 					&max_slots, namehash, res_page,
 					nocase);
+=======
+		de = find_in_block(dentry_page, name, namelen,
+					&max_slots, namehash, res_page);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		if (de)
 			break;
 
@@ -207,6 +226,12 @@ struct f2fs_dir_entry *f2fs_find_entry(struct inode *dir,
 	unsigned int max_depth;
 	unsigned int level;
 
+<<<<<<< HEAD
+=======
+	if (namelen > F2FS_NAME_LEN)
+		return NULL;
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	if (npages == 0)
 		return NULL;
 
@@ -273,17 +298,32 @@ void f2fs_set_link(struct inode *dir, struct f2fs_dir_entry *de,
 	dir->i_mtime = dir->i_ctime = CURRENT_TIME;
 	mark_inode_dirty(dir);
 
+<<<<<<< HEAD
+=======
+	/* update parent inode number before releasing dentry page */
+	F2FS_I(inode)->i_pino = dir->i_ino;
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	f2fs_put_page(page, 1);
 }
 
 static void init_dent_inode(const struct qstr *name, struct page *ipage)
 {
+<<<<<<< HEAD
 	struct f2fs_inode *ri;
 
 	/* copy name info. to this inode page */
 	ri = F2FS_INODE(ipage);
 	ri->i_namelen = cpu_to_le32(name->len);
 	memcpy(ri->i_name, name->name, name->len);
+=======
+	struct f2fs_node *rn;
+
+	/* copy name info. to this inode page */
+	rn = F2FS_NODE(ipage);
+	rn->i.i_namelen = cpu_to_le32(name->len);
+	memcpy(rn->i.i_name, name->name, name->len);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	set_page_dirty(ipage);
 }
 
@@ -359,11 +399,19 @@ static struct page *init_inode_metadata(struct inode *inode,
 
 		err = f2fs_init_acl(inode, dir, page);
 		if (err)
+<<<<<<< HEAD
 			goto put_error;
 
 		err = f2fs_init_security(inode, dir, name, page);
 		if (err)
 			goto put_error;
+=======
+			goto error;
+
+		err = f2fs_init_security(inode, dir, name, page);
+		if (err)
+			goto error;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		wait_on_page_writeback(page);
 	} else {
@@ -387,9 +435,14 @@ static struct page *init_inode_metadata(struct inode *inode,
 	}
 	return page;
 
+<<<<<<< HEAD
 put_error:
 	f2fs_put_page(page, 1);
 error:
+=======
+error:
+	f2fs_put_page(page, 1);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	remove_inode_page(inode);
 	return ERR_PTR(err);
 }
@@ -444,11 +497,18 @@ next:
 }
 
 /*
+<<<<<<< HEAD
  * Caller should grab and release a rwsem by calling f2fs_lock_op() and
  * f2fs_unlock_op().
  */
 int __f2fs_add_link(struct inode *dir, const struct qstr *name,
 						struct inode *inode)
+=======
+ * Caller should grab and release a mutex by calling mutex_lock_op() and
+ * mutex_unlock_op().
+ */
+int __f2fs_add_link(struct inode *dir, const struct qstr *name, struct inode *inode)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	unsigned int bit_pos;
 	unsigned int level;
@@ -474,7 +534,11 @@ int __f2fs_add_link(struct inode *dir, const struct qstr *name,
 	}
 
 start:
+<<<<<<< HEAD
 	if (unlikely(current_depth == MAX_DIR_HASH_DEPTH))
+=======
+	if (current_depth == MAX_DIR_HASH_DEPTH)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return -ENOSPC;
 
 	/* Increase the depth, if required */
@@ -655,7 +719,11 @@ static int f2fs_readdir(struct file *file, void *dirent, filldir_t filldir)
 	bit_pos = (pos % NR_DENTRY_IN_BLOCK);
 	n = (pos / NR_DENTRY_IN_BLOCK);
 
+<<<<<<< HEAD
 	for (; n < npages; n++) {
+=======
+	for ( ; n < npages; n++) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		dentry_page = get_lock_data_page(inode, n);
 		if (IS_ERR(dentry_page))
 			continue;

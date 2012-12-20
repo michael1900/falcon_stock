@@ -41,6 +41,7 @@ static struct inode *f2fs_new_inode(struct inode *dir, umode_t mode)
 	}
 	f2fs_unlock_op(sbi);
 
+<<<<<<< HEAD
 	if (IS_ANDROID_EMU(sbi, F2FS_I(dir), F2FS_I(dir)))
 		f2fs_android_emu(sbi, inode, &inode->i_uid,
 				 &inode->i_gid, &mode);
@@ -54,6 +55,16 @@ static struct inode *f2fs_new_inode(struct inode *dir, umode_t mode)
 		} else {
 			inode->i_gid = current_fsgid();
 		}
+=======
+	inode->i_uid = current_fsuid();
+
+	if (dir->i_mode & S_ISGID) {
+		inode->i_gid = dir->i_gid;
+		if (S_ISDIR(mode))
+			mode |= S_ISGID;
+	} else {
+		inode->i_gid = current_fsgid();
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	}
 
 	inode->i_ino = ino;
@@ -114,7 +125,11 @@ static inline void set_cold_files(struct f2fs_sb_info *sbi, struct inode *inode,
 }
 
 static int f2fs_create(struct inode *dir, struct dentry *dentry, umode_t mode,
+<<<<<<< HEAD
 						struct nameidata *nd)
+=======
+						bool excl)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	struct super_block *sb = dir->i_sb;
 	struct f2fs_sb_info *sbi = F2FS_SB(sb);
@@ -186,7 +201,11 @@ out:
 
 struct dentry *f2fs_get_parent(struct dentry *child)
 {
+<<<<<<< HEAD
 	struct qstr dotdot = {.name = "..", .len = 2};
+=======
+	struct qstr dotdot = QSTR_INIT("..", 2);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	unsigned long ino = f2fs_inode_by_name(child->d_inode, &dotdot);
 	if (!ino)
 		return ERR_PTR(-ENOENT);
@@ -194,7 +213,11 @@ struct dentry *f2fs_get_parent(struct dentry *child)
 }
 
 static struct dentry *f2fs_lookup(struct inode *dir, struct dentry *dentry,
+<<<<<<< HEAD
 		struct nameidata *nd)
+=======
+		unsigned int flags)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	struct inode *inode = NULL;
 	struct f2fs_dir_entry *de;
@@ -429,7 +452,10 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		}
 
 		f2fs_set_link(new_dir, new_entry, new_page, old_inode);
+<<<<<<< HEAD
 		F2FS_I(old_inode)->i_pino = new_dir->i_ino;
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 		new_inode->i_ctime = CURRENT_TIME;
 		if (old_dir_entry)
@@ -463,7 +489,10 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 		if (old_dir != new_dir) {
 			f2fs_set_link(old_inode, old_dir_entry,
 						old_dir_page, new_dir);
+<<<<<<< HEAD
 			F2FS_I(old_inode)->i_pino = new_dir->i_ino;
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		} else {
 			kunmap(old_dir_page);
 			f2fs_put_page(old_dir_page, 0);
@@ -476,10 +505,14 @@ static int f2fs_rename(struct inode *old_dir, struct dentry *old_dentry,
 	return 0;
 
 put_out_dir:
+<<<<<<< HEAD
 	if (PageLocked(new_page))
 		f2fs_put_page(new_page, 1);
 	else
 		f2fs_put_page(new_page, 0);
+=======
+	f2fs_put_page(new_page, 1);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 out_dir:
 	if (old_dir_entry) {
 		kunmap(old_dir_page);

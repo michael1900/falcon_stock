@@ -24,7 +24,11 @@
 #include "gc.h"
 
 static LIST_HEAD(f2fs_stat_list);
+<<<<<<< HEAD
 static struct dentry *f2fs_debugfs_root;
+=======
+static struct dentry *debugfs_root;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 static DEFINE_MUTEX(f2fs_stat_mutex);
 
 static void update_general_status(struct f2fs_sb_info *sbi)
@@ -45,7 +49,10 @@ static void update_general_status(struct f2fs_sb_info *sbi)
 	si->valid_count = valid_user_blocks(sbi);
 	si->valid_node_count = valid_node_count(sbi);
 	si->valid_inode_count = valid_inode_count(sbi);
+<<<<<<< HEAD
 	si->inline_inode = sbi->inline_inode;
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	si->utilization = utilization(sbi);
 
 	si->free_segs = free_segments(sbi);
@@ -201,8 +208,11 @@ static int stat_show(struct seq_file *s, void *v)
 		seq_printf(s, "Other: %u)\n  - Data: %u\n",
 			   si->valid_node_count - si->valid_inode_count,
 			   si->valid_count - si->valid_node_count);
+<<<<<<< HEAD
 		seq_printf(s, "  - Inline_data Inode: %u\n",
 			   si->inline_inode);
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		seq_printf(s, "\nMain area: %d segs, %d secs %d zones\n",
 			   si->main_area_segs, si->main_area_sections,
 			   si->main_area_zones);
@@ -245,6 +255,7 @@ static int stat_show(struct seq_file *s, void *v)
 		seq_printf(s, "  - node blocks : %d\n", si->node_blks);
 		seq_printf(s, "\nExtent Hit Ratio: %d / %d\n",
 			   si->hit_ext, si->total_ext);
+<<<<<<< HEAD
 		seq_puts(s, "\nBalancing F2FS Async:\n");
 		seq_printf(s, "  - nodes: %4d in %4d\n",
 			   si->ndirty_node, si->node_pages);
@@ -253,6 +264,16 @@ static int stat_show(struct seq_file *s, void *v)
 		seq_printf(s, "  - meta: %4d in %4d\n",
 			   si->ndirty_meta, si->meta_pages);
 		seq_printf(s, "  - NATs: %5d > %lu\n",
+=======
+		seq_printf(s, "\nBalancing F2FS Async:\n");
+		seq_printf(s, "  - nodes %4d in %4d\n",
+			   si->ndirty_node, si->node_pages);
+		seq_printf(s, "  - dents %4d in dirs:%4d\n",
+			   si->ndirty_dent, si->ndirty_dirs);
+		seq_printf(s, "  - meta %4d in %4d\n",
+			   si->ndirty_meta, si->meta_pages);
+		seq_printf(s, "  - NATs %5d > %lu\n",
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			   si->nats, NM_WOUT_THRESHOLD);
 		seq_printf(s, "  - SITs: %5d\n  - free_nids: %5d\n",
 			   si->sits, si->fnids);
@@ -343,6 +364,7 @@ void f2fs_destroy_stats(struct f2fs_sb_info *sbi)
 
 void __init f2fs_create_root_stats(void)
 {
+<<<<<<< HEAD
 	struct dentry *file;
 
 	f2fs_debugfs_root = debugfs_create_dir("f2fs", NULL);
@@ -362,13 +384,24 @@ free_debugfs_dir:
 bail:
 	f2fs_debugfs_root = NULL;
 	return;
+=======
+	debugfs_root = debugfs_create_dir("f2fs", NULL);
+	if (debugfs_root)
+		debugfs_create_file("status", S_IRUGO, debugfs_root,
+					 NULL, &stat_fops);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 void f2fs_destroy_root_stats(void)
 {
+<<<<<<< HEAD
 	if (!f2fs_debugfs_root)
 		return;
 
 	debugfs_remove_recursive(f2fs_debugfs_root);
 	f2fs_debugfs_root = NULL;
+=======
+	debugfs_remove_recursive(debugfs_root);
+	debugfs_root = NULL;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }

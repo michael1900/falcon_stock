@@ -23,6 +23,7 @@
 #include "segment.h"
 #include <trace/events/f2fs.h>
 
+<<<<<<< HEAD
 static void f2fs_read_end_io(struct bio *bio, int err)
 {
 	const int uptodate = test_bit(BIO_UPTODATE, &bio->bi_flags);
@@ -212,6 +213,8 @@ alloc_new:
 	trace_f2fs_submit_page_mbio(page, fio->rw, fio->type, blk_addr);
 }
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 /*
  * Lock ordering for the change of data block address:
  * ->data_page
@@ -225,7 +228,11 @@ static void __set_data_blkaddr(struct dnode_of_data *dn, block_t new_addr)
 	struct page *node_page = dn->node_page;
 	unsigned int ofs_in_node = dn->ofs_in_node;
 
+<<<<<<< HEAD
 	f2fs_wait_on_page_writeback(node_page, NODE);
+=======
+	f2fs_wait_on_page_writeback(node_page, NODE, false);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	rn = F2FS_NODE(node_page);
 
@@ -239,9 +246,15 @@ int reserve_new_block(struct dnode_of_data *dn)
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(dn->inode->i_sb);
 
+<<<<<<< HEAD
 	if (unlikely(is_inode_flag_set(F2FS_I(dn->inode), FI_NO_ALLOC)))
 		return -EPERM;
 	if (unlikely(!inc_valid_block_count(sbi, dn->inode, 1)))
+=======
+	if (is_inode_flag_set(F2FS_I(dn->inode), FI_NO_ALLOC))
+		return -EPERM;
+	if (!inc_valid_block_count(sbi, dn->inode, 1))
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return -ENOSPC;
 
 	trace_f2fs_reserve_new_block(dn->inode, dn->nid, dn->ofs_in_node);
@@ -252,6 +265,7 @@ int reserve_new_block(struct dnode_of_data *dn)
 	return 0;
 }
 
+<<<<<<< HEAD
 int f2fs_reserve_block(struct dnode_of_data *dn, pgoff_t index)
 {
 	bool need_put = dn->inode_page ? false : true;
@@ -271,6 +285,8 @@ int f2fs_reserve_block(struct dnode_of_data *dn, pgoff_t index)
 	return err;
 }
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 static int check_extent_cache(struct inode *inode, pgoff_t pgofs,
 					struct buffer_head *bh_result)
 {
@@ -278,9 +294,12 @@ static int check_extent_cache(struct inode *inode, pgoff_t pgofs,
 	pgoff_t start_fofs, end_fofs;
 	block_t start_blkaddr;
 
+<<<<<<< HEAD
 	if (is_inode_flag_set(fi, FI_NO_EXTENT))
 		return 0;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	read_lock(&fi->ext.ext_lock);
 	if (fi->ext.len == 0) {
 		read_unlock(&fi->ext.ext_lock);
@@ -319,7 +338,10 @@ void update_extent_cache(block_t blk_addr, struct dnode_of_data *dn)
 	struct f2fs_inode_info *fi = F2FS_I(dn->inode);
 	pgoff_t fofs, start_fofs, end_fofs;
 	block_t start_blkaddr, end_blkaddr;
+<<<<<<< HEAD
 	int need_update = true;
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	f2fs_bug_on(blk_addr == NEW_ADDR);
 	fofs = start_bidx_of_node(ofs_of_node(dn->node_page), fi) +
@@ -328,9 +350,12 @@ void update_extent_cache(block_t blk_addr, struct dnode_of_data *dn)
 	/* Update the page address in the parent node */
 	__set_data_blkaddr(dn, blk_addr);
 
+<<<<<<< HEAD
 	if (is_inode_flag_set(fi, FI_NO_EXTENT))
 		return;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	write_lock(&fi->ext.ext_lock);
 
 	start_fofs = fi->ext.fofs;
@@ -377,6 +402,7 @@ void update_extent_cache(block_t blk_addr, struct dnode_of_data *dn)
 					fofs - start_fofs + 1;
 			fi->ext.len -= fofs - start_fofs + 1;
 		}
+<<<<<<< HEAD
 	} else {
 		need_update = false;
 	}
@@ -392,6 +418,16 @@ end_update:
 	if (need_update)
 		sync_inode_page(dn);
 	return;
+=======
+		goto end_update;
+	}
+	write_unlock(&fi->ext.ext_lock);
+	return;
+
+end_update:
+	write_unlock(&fi->ext.ext_lock);
+	sync_inode_page(dn);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 struct page *find_data_page(struct inode *inode, pgoff_t index, bool sync)
@@ -417,7 +453,11 @@ struct page *find_data_page(struct inode *inode, pgoff_t index, bool sync)
 		return ERR_PTR(-ENOENT);
 
 	/* By fallocate(), there is no cached page, but with NEW_ADDR */
+<<<<<<< HEAD
 	if (unlikely(dn.data_blkaddr == NEW_ADDR))
+=======
+	if (dn.data_blkaddr == NEW_ADDR)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return ERR_PTR(-EINVAL);
 
 	page = grab_cache_page_write_begin(mapping, index, AOP_FLAG_NOFS);
@@ -429,6 +469,7 @@ struct page *find_data_page(struct inode *inode, pgoff_t index, bool sync)
 		return page;
 	}
 
+<<<<<<< HEAD
 	err = f2fs_submit_page_bio(sbi, page, dn.data_blkaddr,
 					sync ? READ_SYNC : READA);
 	if (err)
@@ -437,6 +478,13 @@ struct page *find_data_page(struct inode *inode, pgoff_t index, bool sync)
 	if (sync) {
 		wait_on_page_locked(page);
 		if (unlikely(!PageUptodate(page))) {
+=======
+	err = f2fs_readpage(sbi, page, dn.data_blkaddr,
+					sync ? READ_SYNC : READA);
+	if (sync) {
+		wait_on_page_locked(page);
+		if (!PageUptodate(page)) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			f2fs_put_page(page, 0);
 			return ERR_PTR(-EIO);
 		}
@@ -470,7 +518,11 @@ repeat:
 	}
 	f2fs_put_dnode(&dn);
 
+<<<<<<< HEAD
 	if (unlikely(dn.data_blkaddr == NULL_ADDR)) {
+=======
+	if (dn.data_blkaddr == NULL_ADDR) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		f2fs_put_page(page, 1);
 		return ERR_PTR(-ENOENT);
 	}
@@ -490,16 +542,28 @@ repeat:
 		return page;
 	}
 
+<<<<<<< HEAD
 	err = f2fs_submit_page_bio(sbi, page, dn.data_blkaddr, READ_SYNC);
+=======
+	err = f2fs_readpage(sbi, page, dn.data_blkaddr, READ_SYNC);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	if (err)
 		return ERR_PTR(err);
 
 	lock_page(page);
+<<<<<<< HEAD
 	if (unlikely(!PageUptodate(page))) {
 		f2fs_put_page(page, 1);
 		return ERR_PTR(-EIO);
 	}
 	if (unlikely(page->mapping != mapping)) {
+=======
+	if (!PageUptodate(page)) {
+		f2fs_put_page(page, 1);
+		return ERR_PTR(-EIO);
+	}
+	if (page->mapping != mapping) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		f2fs_put_page(page, 1);
 		goto repeat;
 	}
@@ -510,12 +574,21 @@ repeat:
  * Caller ensures that this data page is never allocated.
  * A new zero-filled data page is allocated in the page cache.
  *
+<<<<<<< HEAD
  * Also, caller should grab and release a rwsem by calling f2fs_lock_op() and
  * f2fs_unlock_op().
  * Note that, ipage is set only by make_empty_dir.
  */
 struct page *get_new_data_page(struct inode *inode,
 		struct page *ipage, pgoff_t index, bool new_i_size)
+=======
+ * Also, caller should grab and release a mutex by calling mutex_lock_op() and
+ * mutex_unlock_op().
+ * Note that, npage is set only by make_empty_dir.
+ */
+struct page *get_new_data_page(struct inode *inode,
+		struct page *npage, pgoff_t index, bool new_i_size)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 {
 	struct f2fs_sb_info *sbi = F2FS_SB(inode->i_sb);
 	struct address_space *mapping = inode->i_mapping;
@@ -523,6 +596,7 @@ struct page *get_new_data_page(struct inode *inode,
 	struct dnode_of_data dn;
 	int err;
 
+<<<<<<< HEAD
 	set_new_dnode(&dn, inode, ipage, NULL, 0);
 	err = f2fs_reserve_block(&dn, index);
 	if (err)
@@ -533,6 +607,26 @@ repeat:
 		err = -ENOMEM;
 		goto put_err;
 	}
+=======
+	set_new_dnode(&dn, inode, npage, npage, 0);
+	err = get_dnode_of_data(&dn, index, ALLOC_NODE);
+	if (err)
+		return ERR_PTR(err);
+
+	if (dn.data_blkaddr == NULL_ADDR) {
+		if (reserve_new_block(&dn)) {
+			if (!npage)
+				f2fs_put_dnode(&dn);
+			return ERR_PTR(-ENOSPC);
+		}
+	}
+	if (!npage)
+		f2fs_put_dnode(&dn);
+repeat:
+	page = grab_cache_page(mapping, index);
+	if (!page)
+		return ERR_PTR(-ENOMEM);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	if (PageUptodate(page))
 		return page;
@@ -541,6 +635,7 @@ repeat:
 		zero_user_segment(page, 0, PAGE_CACHE_SIZE);
 		SetPageUptodate(page);
 	} else {
+<<<<<<< HEAD
 		err = f2fs_submit_page_bio(sbi, page, dn.data_blkaddr,
 								READ_SYNC);
 		if (err)
@@ -553,6 +648,17 @@ repeat:
 			goto put_err;
 		}
 		if (unlikely(page->mapping != mapping)) {
+=======
+		err = f2fs_readpage(sbi, page, dn.data_blkaddr, READ_SYNC);
+		if (err)
+			return ERR_PTR(err);
+		lock_page(page);
+		if (!PageUptodate(page)) {
+			f2fs_put_page(page, 1);
+			return ERR_PTR(-EIO);
+		}
+		if (page->mapping != mapping) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			f2fs_put_page(page, 1);
 			goto repeat;
 		}
@@ -566,6 +672,7 @@ repeat:
 		mark_inode_dirty_sync(inode);
 	}
 	return page;
+<<<<<<< HEAD
 
 put_err:
 	f2fs_put_dnode(&dn);
@@ -601,10 +708,67 @@ static int __allocate_data_block(struct dnode_of_data *dn)
 	clear_inode_flag(F2FS_I(dn->inode), FI_NO_EXTENT);
 
 	dn->data_blkaddr = new_blkaddr;
+=======
+}
+
+static void read_end_io(struct bio *bio, int err)
+{
+	const int uptodate = test_bit(BIO_UPTODATE, &bio->bi_flags);
+	struct bio_vec *bvec = bio->bi_io_vec + bio->bi_vcnt - 1;
+
+	do {
+		struct page *page = bvec->bv_page;
+
+		if (--bvec >= bio->bi_io_vec)
+			prefetchw(&bvec->bv_page->flags);
+
+		if (uptodate) {
+			SetPageUptodate(page);
+		} else {
+			ClearPageUptodate(page);
+			SetPageError(page);
+		}
+		unlock_page(page);
+	} while (bvec >= bio->bi_io_vec);
+	bio_put(bio);
+}
+
+/*
+ * Fill the locked page with data located in the block address.
+ * Return unlocked page.
+ */
+int f2fs_readpage(struct f2fs_sb_info *sbi, struct page *page,
+					block_t blk_addr, int type)
+{
+	struct block_device *bdev = sbi->sb->s_bdev;
+	struct bio *bio;
+
+	trace_f2fs_readpage(page, blk_addr, type);
+
+	down_read(&sbi->bio_sem);
+
+	/* Allocate a new bio */
+	bio = f2fs_bio_alloc(bdev, 1);
+
+	/* Initialize the bio */
+	bio->bi_sector = SECTOR_FROM_BLOCK(sbi, blk_addr);
+	bio->bi_end_io = read_end_io;
+
+	if (bio_add_page(bio, page, PAGE_CACHE_SIZE, 0) < PAGE_CACHE_SIZE) {
+		bio_put(bio);
+		up_read(&sbi->bio_sem);
+		f2fs_put_page(page, 1);
+		return -EFAULT;
+	}
+
+	submit_bio(type, bio);
+	up_read(&sbi->bio_sem);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return 0;
 }
 
 /*
+<<<<<<< HEAD
  * get_data_block() now supported readahead/bmap/rw direct_IO with mapped bh.
  * If original data blocks are allocated, then give them to blockdev.
  * Otherwise,
@@ -623,10 +787,26 @@ static int get_data_block(struct inode *inode, sector_t iblock,
 	pgoff_t pgofs, end_offset;
 	int err = 0, ofs = 1;
 	bool allocated = false;
+=======
+ * This function should be used by the data read flow only where it
+ * does not check the "create" flag that indicates block allocation.
+ * The reason for this special functionality is to exploit VFS readahead
+ * mechanism.
+ */
+static int get_data_block_ro(struct inode *inode, sector_t iblock,
+			struct buffer_head *bh_result, int create)
+{
+	unsigned int blkbits = inode->i_sb->s_blocksize_bits;
+	unsigned maxblocks = bh_result->b_size >> blkbits;
+	struct dnode_of_data dn;
+	pgoff_t pgofs;
+	int err;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	/* Get the page offset from the block offset(iblock) */
 	pgofs =	(pgoff_t)(iblock >> (PAGE_CACHE_SHIFT - blkbits));
 
+<<<<<<< HEAD
 	if (check_extent_cache(inode, pgofs, bh_result))
 		goto out;
 
@@ -712,10 +892,51 @@ unlock_out:
 out:
 	trace_f2fs_get_data_block(inode, iblock, bh_result, err);
 	return err;
+=======
+	if (check_extent_cache(inode, pgofs, bh_result)) {
+		trace_f2fs_get_data_block(inode, iblock, bh_result, 0);
+		return 0;
+	}
+
+	/* When reading holes, we need its node page */
+	set_new_dnode(&dn, inode, NULL, NULL, 0);
+	err = get_dnode_of_data(&dn, pgofs, LOOKUP_NODE_RA);
+	if (err) {
+		trace_f2fs_get_data_block(inode, iblock, bh_result, err);
+		return (err == -ENOENT) ? 0 : err;
+	}
+
+	/* It does not support data allocation */
+	f2fs_bug_on(create);
+
+	if (dn.data_blkaddr != NEW_ADDR && dn.data_blkaddr != NULL_ADDR) {
+		int i;
+		unsigned int end_offset;
+
+		end_offset = IS_INODE(dn.node_page) ?
+				ADDRS_PER_INODE(F2FS_I(inode)) :
+				ADDRS_PER_BLOCK;
+
+		clear_buffer_new(bh_result);
+
+		/* Give more consecutive addresses for the read ahead */
+		for (i = 0; i < end_offset - dn.ofs_in_node; i++)
+			if (((datablock_addr(dn.node_page,
+							dn.ofs_in_node + i))
+				!= (dn.data_blkaddr + i)) || maxblocks == i)
+				break;
+		map_bh(bh_result, inode->i_sb, dn.data_blkaddr);
+		bh_result->b_size = (i << blkbits);
+	}
+	f2fs_put_dnode(&dn);
+	trace_f2fs_get_data_block(inode, iblock, bh_result, 0);
+	return 0;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 static int f2fs_read_data_page(struct file *file, struct page *page)
 {
+<<<<<<< HEAD
 	struct inode *inode = page->mapping->host;
 	int ret;
 
@@ -726,12 +947,16 @@ static int f2fs_read_data_page(struct file *file, struct page *page)
 		ret = mpage_readpage(page, get_data_block);
 
 	return ret;
+=======
+	return mpage_readpage(page, get_data_block_ro);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 static int f2fs_read_data_pages(struct file *file,
 			struct address_space *mapping,
 			struct list_head *pages, unsigned nr_pages)
 {
+<<<<<<< HEAD
 	struct inode *inode = file->f_mapping->host;
 
 	/* If the file has inline data, skip readpages */
@@ -745,6 +970,15 @@ int do_write_data_page(struct page *page, struct f2fs_io_info *fio)
 {
 	struct inode *inode = page->mapping->host;
 	block_t old_blkaddr, new_blkaddr;
+=======
+	return mpage_readpages(mapping, pages, nr_pages, get_data_block_ro);
+}
+
+int do_write_data_page(struct page *page)
+{
+	struct inode *inode = page->mapping->host;
+	block_t old_blk_addr, new_blk_addr;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	struct dnode_of_data dn;
 	int err = 0;
 
@@ -753,10 +987,17 @@ int do_write_data_page(struct page *page, struct f2fs_io_info *fio)
 	if (err)
 		return err;
 
+<<<<<<< HEAD
 	old_blkaddr = dn.data_blkaddr;
 
 	/* This page is already truncated */
 	if (old_blkaddr == NULL_ADDR)
+=======
+	old_blk_addr = dn.data_blkaddr;
+
+	/* This page is already truncated */
+	if (old_blk_addr == NULL_ADDR)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		goto out_writepage;
 
 	set_page_writeback(page);
@@ -765,6 +1006,7 @@ int do_write_data_page(struct page *page, struct f2fs_io_info *fio)
 	 * If current allocation needs SSR,
 	 * it had better in-place writes for updated data.
 	 */
+<<<<<<< HEAD
 	if (unlikely(old_blkaddr != NEW_ADDR &&
 			!is_cold_data(page) &&
 			need_inplace_update(inode))) {
@@ -772,6 +1014,17 @@ int do_write_data_page(struct page *page, struct f2fs_io_info *fio)
 	} else {
 		write_data_page(page, &dn, &new_blkaddr, fio);
 		update_extent_cache(new_blkaddr, &dn);
+=======
+	if (unlikely(old_blk_addr != NEW_ADDR &&
+			!is_cold_data(page) &&
+			need_inplace_update(inode))) {
+		rewrite_data_page(F2FS_SB(inode->i_sb), page,
+						old_blk_addr);
+	} else {
+		write_data_page(inode, page, &dn,
+				old_blk_addr, &new_blk_addr);
+		update_extent_cache(new_blk_addr, &dn);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	}
 out_writepage:
 	f2fs_put_dnode(&dn);
@@ -786,6 +1039,7 @@ static int f2fs_write_data_page(struct page *page,
 	loff_t i_size = i_size_read(inode);
 	const pgoff_t end_index = ((unsigned long long) i_size)
 							>> PAGE_CACHE_SHIFT;
+<<<<<<< HEAD
 	unsigned offset = 0;
 	bool need_balance_fs = false;
 	int err = 0;
@@ -793,6 +1047,11 @@ static int f2fs_write_data_page(struct page *page,
 		.type = DATA,
 		.rw = (wbc->sync_mode == WB_SYNC_ALL) ? WRITE_SYNC : WRITE,
 	};
+=======
+	unsigned offset;
+	bool need_balance_fs = false;
+	int err = 0;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	if (page->index < end_index)
 		goto write;
@@ -812,7 +1071,11 @@ static int f2fs_write_data_page(struct page *page,
 
 	zero_user_segment(page, offset, PAGE_CACHE_SIZE);
 write:
+<<<<<<< HEAD
 	if (unlikely(sbi->por_doing)) {
+=======
+	if (sbi->por_doing) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		err = AOP_WRITEPAGE_ACTIVATE;
 		goto redirty_out;
 	}
@@ -821,6 +1084,7 @@ write:
 	if (S_ISDIR(inode->i_mode)) {
 		dec_page_count(sbi, F2FS_DIRTY_DENTS);
 		inode_dec_dirty_dents(inode);
+<<<<<<< HEAD
 		err = do_write_data_page(page, &fio);
 	} else {
 		f2fs_lock_op(sbi);
@@ -833,6 +1097,12 @@ write:
 			err = do_write_data_page(page, &fio);
 		}
 
+=======
+		err = do_write_data_page(page);
+	} else {
+		f2fs_lock_op(sbi);
+		err = do_write_data_page(page);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		f2fs_unlock_op(sbi);
 		need_balance_fs = true;
 	}
@@ -841,10 +1111,15 @@ write:
 	else if (err)
 		goto redirty_out;
 
+<<<<<<< HEAD
 	if (wbc->for_reclaim) {
 		f2fs_submit_merged_bio(sbi, DATA, WRITE);
 		need_balance_fs = false;
 	}
+=======
+	if (wbc->for_reclaim)
+		f2fs_submit_bio(sbi, DATA, true);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	clear_cold_data(page);
 out:
@@ -896,8 +1171,12 @@ static int f2fs_write_data_pages(struct address_space *mapping,
 	ret = write_cache_pages(mapping, wbc, __f2fs_writepage, mapping);
 	if (locked)
 		mutex_unlock(&sbi->writepages);
+<<<<<<< HEAD
 
 	f2fs_submit_merged_bio(sbi, DATA, WRITE);
+=======
+	f2fs_submit_bio(sbi, DATA, (wbc->sync_mode == WB_SYNC_ALL));
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	remove_dirty_dir_inode(inode);
 
@@ -918,15 +1197,19 @@ static int f2fs_write_begin(struct file *file, struct address_space *mapping,
 
 	f2fs_balance_fs(sbi);
 repeat:
+<<<<<<< HEAD
 	err = f2fs_convert_inline_data(inode, pos + len);
 	if (err)
 		return err;
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	page = grab_cache_page_write_begin(mapping, index, flags);
 	if (!page)
 		return -ENOMEM;
 	*pagep = page;
 
+<<<<<<< HEAD
 	if (f2fs_has_inline_data(inode) && (pos + len) <= MAX_INLINE_DATA)
 		goto inline_data;
 
@@ -940,6 +1223,24 @@ repeat:
 		return err;
 	}
 inline_data:
+=======
+	f2fs_lock_op(sbi);
+
+	set_new_dnode(&dn, inode, NULL, NULL, 0);
+	err = get_dnode_of_data(&dn, index, ALLOC_NODE);
+	if (err)
+		goto err;
+
+	if (dn.data_blkaddr == NULL_ADDR)
+		err = reserve_new_block(&dn);
+
+	f2fs_put_dnode(&dn);
+	if (err)
+		goto err;
+
+	f2fs_unlock_op(sbi);
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	if ((len == PAGE_CACHE_SIZE) || PageUptodate(page))
 		return 0;
 
@@ -955,6 +1256,7 @@ inline_data:
 	if (dn.data_blkaddr == NEW_ADDR) {
 		zero_user_segment(page, 0, PAGE_CACHE_SIZE);
 	} else {
+<<<<<<< HEAD
 		if (f2fs_has_inline_data(inode))
 			err = f2fs_read_inline_data(inode, page);
 		else
@@ -968,6 +1270,17 @@ inline_data:
 			return -EIO;
 		}
 		if (unlikely(page->mapping != mapping)) {
+=======
+		err = f2fs_readpage(sbi, page, dn.data_blkaddr, READ_SYNC);
+		if (err)
+			return err;
+		lock_page(page);
+		if (!PageUptodate(page)) {
+			f2fs_put_page(page, 1);
+			return -EIO;
+		}
+		if (page->mapping != mapping) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			f2fs_put_page(page, 1);
 			goto repeat;
 		}
@@ -976,6 +1289,14 @@ out:
 	SetPageUptodate(page);
 	clear_cold_data(page);
 	return 0;
+<<<<<<< HEAD
+=======
+
+err:
+	f2fs_unlock_op(sbi);
+	f2fs_put_page(page, 1);
+	return err;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 static int f2fs_write_end(struct file *file,
@@ -994,6 +1315,7 @@ static int f2fs_write_end(struct file *file,
 		update_inode_page(inode);
 	}
 
+<<<<<<< HEAD
 	f2fs_put_page(page, 1);
 	return copied;
 }
@@ -1016,12 +1338,20 @@ static int check_direct_IO(struct inode *inode, int rw,
 	return 0;
 }
 
+=======
+	unlock_page(page);
+	page_cache_release(page);
+	return copied;
+}
+
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 static ssize_t f2fs_direct_IO(int rw, struct kiocb *iocb,
 		const struct iovec *iov, loff_t offset, unsigned long nr_segs)
 {
 	struct file *file = iocb->ki_filp;
 	struct inode *inode = file->f_mapping->host;
 
+<<<<<<< HEAD
 	/* Let buffer I/O handle the inline data case. */
 	if (f2fs_has_inline_data(inode))
 		return 0;
@@ -1031,6 +1361,14 @@ static ssize_t f2fs_direct_IO(int rw, struct kiocb *iocb,
 
 	return blockdev_direct_IO(rw, iocb, inode, iov, offset, nr_segs,
 							get_data_block);
+=======
+	if (rw == WRITE)
+		return 0;
+
+	/* Needs synchronization with the cleaner */
+	return blockdev_direct_IO(rw, iocb, inode, iov, offset, nr_segs,
+						  get_data_block_ro);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 static void f2fs_invalidate_data_page(struct page *page, unsigned long offset)
@@ -1068,7 +1406,11 @@ static int f2fs_set_data_page_dirty(struct page *page)
 
 static sector_t f2fs_bmap(struct address_space *mapping, sector_t block)
 {
+<<<<<<< HEAD
 	return generic_block_bmap(mapping, block, get_data_block);
+=======
+	return generic_block_bmap(mapping, block, get_data_block_ro);
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 }
 
 const struct address_space_operations f2fs_dblock_aops = {

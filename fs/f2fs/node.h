@@ -224,6 +224,7 @@ static inline block_t next_blkaddr_of_node(struct page *node_page)
  *    |            `- direct node (5 + N => 5 + 2N - 1)
  *    `- double indirect node (5 + 2N)
  *                 `- indirect node (6 + 2N)
+<<<<<<< HEAD
  *                       `- direct node
  *                 ......
  *                 `- indirect node ((6 + 2N) + x(N + 1))
@@ -231,6 +232,9 @@ static inline block_t next_blkaddr_of_node(struct page *node_page)
  *                 ......
  *                 `- indirect node ((6 + 2N) + (N - 1)(N + 1))
  *                       `- direct node
+=======
+ *                       `- direct node (x(N + 1))
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
  */
 static inline bool IS_DNODE(struct page *node_page)
 {

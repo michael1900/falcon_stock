@@ -130,11 +130,18 @@ static int f2fs_xattr_advise_get(struct dentry *dentry, const char *name,
 {
 	struct inode *inode = dentry->d_inode;
 
+<<<<<<< HEAD
 	if (!name || strcmp(name, "") != 0)
 		return -EINVAL;
 
 	if (buffer)
 		*((char *)buffer) = F2FS_I(inode)->i_advise;
+=======
+	if (strcmp(name, "") != 0)
+		return -EINVAL;
+
+	*((char *)buffer) = F2FS_I(inode)->i_advise;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return sizeof(char);
 }
 
@@ -143,14 +150,22 @@ static int f2fs_xattr_advise_set(struct dentry *dentry, const char *name,
 {
 	struct inode *inode = dentry->d_inode;
 
+<<<<<<< HEAD
 	if (!name || strcmp(name, "") != 0)
+=======
+	if (strcmp(name, "") != 0)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		return -EINVAL;
 	if (!inode_owner_or_capable(inode))
 		return -EPERM;
 	if (value == NULL)
 		return -EINVAL;
 
+<<<<<<< HEAD
 	F2FS_I(inode)->i_advise = *(char *)value;
+=======
+	F2FS_I(inode)->i_advise |= *(char *)value;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return 0;
 }
 
@@ -523,7 +538,11 @@ static int __f2fs_setxattr(struct inode *inode, int name_index,
 		if (found)
 			free = free + ENTRY_SIZE(here);
 
+<<<<<<< HEAD
 		if (unlikely(free < newsize)) {
+=======
+		if (free < newsize) {
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 			error = -ENOSPC;
 			goto exit;
 		}

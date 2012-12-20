@@ -20,7 +20,11 @@
 #define LIMIT_FREE_BLOCK	40 /* percentage over invalid + free space */
 
 /* Search max. number of dirty segments to select a victim segment */
+<<<<<<< HEAD
 #define DEF_MAX_VICTIM_SEARCH 4096 /* covers 8GB */
+=======
+#define MAX_VICTIM_SEARCH 4096 /* covers 8GB */
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 struct f2fs_gc_kthread {
 	struct task_struct *f2fs_gc_task;
@@ -105,6 +109,10 @@ static inline int is_idle(struct f2fs_sb_info *sbi)
 {
 	struct block_device *bdev = sbi->sb->s_bdev;
 	struct request_queue *q = bdev_get_queue(bdev);
+<<<<<<< HEAD
 	struct request_list *rl = &q->rq;
+=======
+	struct request_list *rl = &q->root_rl;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 	return !(rl->count[BLK_RW_SYNC]) && !(rl->count[BLK_RW_ASYNC]);
 }
