@@ -28,6 +28,7 @@
 #include <linux/time.h>
 #include <linux/interrupt.h>
 #include "logger.h"
+#include <linux/powersuspend.h>
 
 #include <asm/ioctls.h>
 
@@ -38,6 +39,12 @@
 static DEFINE_SPINLOCK(log_lock);
 static struct work_struct write_console_wq;
 static struct tasklet_struct schedule_work_tasklet;
+
+static unsigned int log_enabled = 1;
+static unsigned int log_always_on = 0;
+
+module_param(log_enabled, uint, S_IWUSR | S_IRUGO);
+module_param(log_always_on, uint, S_IWUSR | S_IRUGO);
 
 /*
  * struct logger_log - represents a specific log, such as 'main' or 'radio'
@@ -453,6 +460,23 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 	return count;
 }
 
+static void log_power_suspend(struct power_suspend *handler)
+{
+	if (log_enabled)
+		log_enabled = 0;
+}
+
+static void log_power_resume(struct power_suspend *handler)
+{
+	if (!log_enabled)
+		log_enabled = 1;
+}
+
+static struct power_suspend log_suspend = {
+	.suspend = log_power_suspend,
+	.resume = log_power_resume,
+};
+
 /*
  * logger_aio_write - our write method, implementing support for write(),
  * writev(), and aio_write(). Writes are our fast path, and we try to optimize
@@ -468,6 +492,9 @@ ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 	ssize_t ret = 0;
 
 	getnstimeofday(&now);
+
+	if (!log_enabled && !log_always_on)
+		return 0;
 
 	header.pid = current->tgid;
 	header.tid = current->pid;
@@ -933,6 +960,8 @@ static int __init init_log(struct logger_log *log)
 static int __init logger_init(void)
 {
 	int ret;
+
+	register_power_suspend(&log_suspend);
 
 	ret = init_log(&log_main);
 	if (unlikely(ret))
