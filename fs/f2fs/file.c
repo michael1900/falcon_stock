@@ -199,7 +199,7 @@ int f2fs_sync_file(struct file *file, loff_t start, loff_t end, int datasync)
 flush_out:
 		remove_dirty_inode(sbi, inode->i_ino, UPDATE_INO);
 		clear_inode_flag(fi, FI_UPDATE_WRITE);
-		ret = blkdev_issue_flush(inode->i_sb->s_bdev, GFP_KERNEL, NULL);
+		ret = f2fs_issue_flush(F2FS_SB(inode->i_sb));
 	}
 out:
 	mutex_unlock(&inode->i_mutex);
