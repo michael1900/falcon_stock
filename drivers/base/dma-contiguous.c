@@ -515,9 +515,12 @@ struct page *dma_alloc_from_contiguous(struct device *dev, int count,
 	for (;;) {
 		pageno = bitmap_find_next_zero_area(cma->bitmap, cma->count,
 						    start, count, mask);
-		if (pageno >= cma->count)
-			break;
 
+
+		if (pageno >= cma->count) {
+			pfn = 0;
+			break;
+                }
 		pfn = cma->base_pfn + pageno;
 		
 		if (cma->in_system)
