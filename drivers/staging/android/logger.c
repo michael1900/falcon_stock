@@ -40,11 +40,15 @@ static DEFINE_SPINLOCK(log_lock);
 static struct work_struct write_console_wq;
 static struct tasklet_struct schedule_work_tasklet;
 
-static unsigned int log_enabled = 1;
-static unsigned int log_always_on = 0;
+/*
+ * 0 - Enabled
+ * 1 - Auto Suspend
+ * 2 - Disabled
+ */
+static unsigned int log_mode = 1;
+static unsigned int log_enabled = 1; // Do not change this value
 
-module_param(log_enabled, uint, S_IWUSR | S_IRUGO);
-module_param(log_always_on, uint, S_IWUSR | S_IRUGO);
+module_param(log_mode, uint, S_IWUSR | S_IRUGO);
 
 /*
  * struct logger_log - represents a specific log, such as 'main' or 'radio'
@@ -476,14 +480,13 @@ static ssize_t do_write_log_from_user(struct logger_log *log,
 
 static void log_power_suspend(struct power_suspend *handler)
 {
-	if (log_enabled)
+	if (log_mode == 1)
 		log_enabled = 0;
 }
 
 static void log_power_resume(struct power_suspend *handler)
 {
-	if (!log_enabled)
-		log_enabled = 1;
+	log_enabled = 1;
 }
 
 static struct power_suspend log_suspend = {
@@ -499,16 +502,18 @@ static struct power_suspend log_suspend = {
 ssize_t logger_aio_write(struct kiocb *iocb, const struct iovec *iov,
 			 unsigned long nr_segs, loff_t ppos)
 {
-	struct logger_log *log = file_get_log(iocb->ki_filp);
-	size_t orig = log->w_off;
+	struct logger_log *log;
+	size_t orig, ret = 0;
 	struct logger_entry header;
 	struct timespec now;
-	ssize_t ret = 0;
 
 	getnstimeofday(&now);
 
-	if (!log_enabled && !log_always_on)
+	if (!log_enabled || log_mode == 2)
 		return 0;
+
+	log = file_get_log(iocb->ki_filp);
+	orig = log->w_off;
 
 	header.pid = current->tgid;
 	header.tid = current->pid;
@@ -789,7 +794,7 @@ DEFINE_LOGGER_DEVICE(log_main, LOGGER_LOG_MAIN, CONFIG_LOGCAT_SIZE*1024)
 DEFINE_LOGGER_DEVICE(log_events, LOGGER_LOG_EVENTS, CONFIG_LOGCAT_SIZE*1024)
 DEFINE_LOGGER_DEVICE(log_radio, LOGGER_LOG_RADIO, CONFIG_LOGCAT_SIZE*1024)
 DEFINE_LOGGER_DEVICE(log_system, LOGGER_LOG_SYSTEM, CONFIG_LOGCAT_SIZE*1024)
-DEFINE_LOGGER_DEVICE(log_kernel, LOGGER_LOG_KERNEL, 256*1024)
+DEFINE_LOGGER_DEVICE(log_kernel, LOGGER_LOG_KERNEL, 128*1024)
 DEFINE_LOGGER_DEVICE(log_kernel_bottom, LOGGER_LOG_KERNEL_BOT, 64*1024)
 
 static struct logger_log *get_log_from_minor(int minor)
