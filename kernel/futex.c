@@ -857,6 +857,7 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
 				 * then the pi_state must have an
 				 * owner. [7]
 				 */
+
 				if (!pi_state->owner)
 					return -EINVAL;
 			}
@@ -959,9 +960,9 @@ lookup_pi_state(u32 uval, struct futex_hash_bucket *hb,
  *			be "current" except in the case of requeue pi.
  * @set_waiters:	force setting the FUTEX_WAITERS bit (1) or not (0)
  *
- * Returns:
- *  0 - ready to wait
- *  1 - acquired the lock
+ * Return:
+ *  0 - ready to wait;
+ * >0 - acquired the lock, return value is vpid of the top_waiter
  * <0 - error
  *
  * The hb->lock and futex_key refs shall be held by the caller.
