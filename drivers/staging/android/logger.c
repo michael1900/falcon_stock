@@ -45,7 +45,7 @@ static struct tasklet_struct schedule_work_tasklet;
  * 1 - Auto Suspend
  * 2 - Disabled
  */
-static unsigned int log_mode = 1;
+static unsigned int log_mode = 2;
 static unsigned int log_enabled = 1; // Do not change this value
 
 module_param(log_mode, uint, S_IWUSR | S_IRUGO);
