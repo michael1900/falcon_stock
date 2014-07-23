@@ -258,8 +258,8 @@ restart:
 
 	pending = local_softirq_pending();
 	if (pending) {
-		if (time_before(jiffies, end) && !need_resched() &&
-		    --max_restart)
+		if (time_before(jiffies, end) && !need_resched())
+		    //--max_restart)
 			goto restart;
 
 		wakeup_softirqd();
