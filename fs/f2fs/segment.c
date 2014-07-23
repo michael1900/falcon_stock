@@ -195,6 +195,111 @@ void f2fs_balance_fs_bg(struct f2fs_sb_info *sbi)
 		f2fs_sync_fs(sbi->sb, true);
 }
 
+<<<<<<< HEAD
+=======
+static int issue_flush_thread(void *data)
+{
+	struct f2fs_sb_info *sbi = data;
+	struct flush_cmd_control *fcc = SM_I(sbi)->cmd_control_info;
+	wait_queue_head_t *q = &fcc->flush_wait_queue;
+repeat:
+	if (kthread_should_stop())
+		return 0;
+
+	spin_lock(&fcc->issue_lock);
+	if (fcc->issue_list) {
+		fcc->dispatch_list = fcc->issue_list;
+		fcc->issue_list = fcc->issue_tail = NULL;
+	}
+	spin_unlock(&fcc->issue_lock);
+
+	if (fcc->dispatch_list) {
+		struct bio *bio = bio_alloc(GFP_NOIO, 0);
+		struct flush_cmd *cmd, *next;
+		int ret;
+
+		bio->bi_bdev = sbi->sb->s_bdev;
+		ret = submit_bio_wait(WRITE_FLUSH, bio);
+
+		for (cmd = fcc->dispatch_list; cmd; cmd = next) {
+			cmd->ret = ret;
+			next = cmd->next;
+			complete(&cmd->wait);
+		}
+		bio_put(bio);
+		fcc->dispatch_list = NULL;
+	}
+
+	wait_event_interruptible(*q,
+			kthread_should_stop() || fcc->issue_list);
+	goto repeat;
+}
+
+int f2fs_issue_flush(struct f2fs_sb_info *sbi)
+{
+	struct flush_cmd_control *fcc = SM_I(sbi)->cmd_control_info;
+	struct flush_cmd cmd;
+
+	if (test_opt(sbi, NOBARRIER))
+		return 0;
+
+	if (!test_opt(sbi, FLUSH_MERGE))
+		return blkdev_issue_flush(sbi->sb->s_bdev, GFP_KERNEL, NULL);
+
+	init_completion(&cmd.wait);
+	cmd.next = NULL;
+
+	spin_lock(&fcc->issue_lock);
+	if (fcc->issue_list)
+		fcc->issue_tail->next = &cmd;
+	else
+		fcc->issue_list = &cmd;
+	fcc->issue_tail = &cmd;
+	spin_unlock(&fcc->issue_lock);
+
+	if (!fcc->dispatch_list)
+		wake_up(&fcc->flush_wait_queue);
+
+	wait_for_completion(&cmd.wait);
+
+	return cmd.ret;
+}
+
+int create_flush_cmd_control(struct f2fs_sb_info *sbi)
+{
+	dev_t dev = sbi->sb->s_bdev->bd_dev;
+	struct flush_cmd_control *fcc;
+	int err = 0;
+
+	fcc = kzalloc(sizeof(struct flush_cmd_control), GFP_KERNEL);
+	if (!fcc)
+		return -ENOMEM;
+	spin_lock_init(&fcc->issue_lock);
+	init_waitqueue_head(&fcc->flush_wait_queue);
+	SM_I(sbi)->cmd_control_info = fcc;
+	fcc->f2fs_issue_flush = kthread_run(issue_flush_thread, sbi,
+				"f2fs_flush-%u:%u", MAJOR(dev), MINOR(dev));
+	if (IS_ERR(fcc->f2fs_issue_flush)) {
+		err = PTR_ERR(fcc->f2fs_issue_flush);
+		kfree(fcc);
+		SM_I(sbi)->cmd_control_info = NULL;
+		return err;
+	}
+
+	return err;
+}
+
+void destroy_flush_cmd_control(struct f2fs_sb_info *sbi)
+{
+	struct flush_cmd_control *fcc = SM_I(sbi)->cmd_control_info;
+
+	if (fcc && fcc->f2fs_issue_flush)
+		kthread_stop(fcc->f2fs_issue_flush);
+	kfree(fcc);
+	SM_I(sbi)->cmd_control_info = NULL;
+}
+
+>>>>>>> 0f7b2ab... f2fs: add nobarrier mount option
 static void __locate_dirty_segment(struct f2fs_sb_info *sbi, unsigned int segno,
 		enum dirty_type dirty_type)
 {
