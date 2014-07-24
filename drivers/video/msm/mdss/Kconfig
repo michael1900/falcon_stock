@@ -47,3 +47,7 @@ config MMI_PANEL_NOTIFICATIONS
 	default n
 	---help---
 	MMI panel notifications framework
+
+config LCD_NOTIFY
+       bool 'LCD Notify'
+       default n
