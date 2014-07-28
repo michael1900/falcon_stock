@@ -92,12 +92,6 @@ static struct reserve_info msm8226_reserve_info __initdata = {
 	.paddr_to_memtype = msm8226_paddr_to_memtype,
 };
 
-static void __init msm8226_early_memory(void)
-{
-	reserve_info = &msm8226_reserve_info;
-	of_scan_flat_dt(dt_scan_for_memory_hole, msm8226_reserve_table);
-}
-
 static void __init msm8226_reserve(void)
 {
 	reserve_info = &msm8226_reserve_info;
@@ -158,7 +152,6 @@ DT_MACHINE_START(MSM8226_DT, "Qualcomm MSM 8226 (Flattened Device Tree)")
 	.timer = &msm_dt_timer,
 	.dt_compat = msm8226_dt_match,
 	.reserve = msm8226_reserve,
-	.init_very_early = msm8226_early_memory,
 	.restart = msm_restart,
 	.smp = &arm_smp_ops,
 MACHINE_END
