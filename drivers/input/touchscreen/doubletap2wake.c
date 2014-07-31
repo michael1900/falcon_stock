@@ -32,6 +32,9 @@
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
 #endif
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 #include <linux/hrtimer.h>
 #include <asm-generic/cputime.h>
 
@@ -297,6 +300,21 @@ static struct early_suspend dt2w_early_suspend_handler = {
 };
 #endif
 
+#ifdef CONFIG_POWERSUSPEND
+static void dt2w_power_suspend(struct power_suspend *h) {
+	dt2w_scr_suspended = true;
+}
+
+static void dt2w_power_resume(struct power_suspend *h) {
+	dt2w_scr_suspended = false;
+}
+
+static struct power_suspend dt2w_power_suspend_handler = {
+	.suspend = dt2w_power_suspend,
+	.resume = dt2w_power_resume,
+};
+#endif
+
 /*
  * SYSFS stuff below here
  */
@@ -383,6 +401,10 @@ static int __init doubletap2wake_init(void)
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	register_early_suspend(&dt2w_early_suspend_handler);
+#endif
+
+#ifdef CONFIG_POWERSUSPEND
+	register_power_suspend(&dt2w_power_suspend_handler);
 #endif
 
 #ifndef ANDROID_TOUCH_DECLARED

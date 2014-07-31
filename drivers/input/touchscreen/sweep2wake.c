@@ -35,6 +35,9 @@
 #ifdef CONFIG_HAS_EARLYSUSPEND
 #include <linux/earlysuspend.h>
 #endif
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 #include <linux/hrtimer.h>
 
 /* uncomment since no touchscreen defines android touch, do that here */
@@ -471,6 +474,21 @@ static struct early_suspend s2w_early_suspend_handler = {
 };
 #endif
 
+#ifdef CONFIG_POWERSUSPEND
+static void s2w_power_suspend(struct power_suspend *h) {
+	s2w_scr_suspended = true;
+}
+
+static void s2w_power_resume(struct power_suspend *h) {
+	s2w_scr_suspended = false;
+}
+
+static struct power_suspend s2w_power_suspend_handler = {
+	.suspend = s2w_power_suspend,
+	.resume = s2w_power_resume,
+};
+#endif
+
 /*
  * SYSFS stuff below here
  */
@@ -595,6 +613,10 @@ static int __init sweep2wake_init(void)
 
 #ifdef CONFIG_HAS_EARLYSUSPEND
 	register_early_suspend(&s2w_early_suspend_handler);
+#endif
+
+#ifdef CONFIG_POWERSUSPEND
+	register_power_suspend(&s2w_power_suspend_handler);
 #endif
 
 #ifndef ANDROID_TOUCH_DECLARED
