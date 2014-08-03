@@ -18,6 +18,8 @@
  * 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include <asm-generic/cputime.h>
+
 #ifndef _LINUX_DOUBLETAP2WAKE_H
 #define _LINUX_DOUBLETAP2WAKE_H
 
@@ -27,5 +29,16 @@ int dt2w_switch = 0;
 #else
 extern int dt2w_switch;
 #endif
+
+struct doubletab_data {
+	cputime64_t tap_time_pre;
+	
+	/*0 = touch_x, 1 = touch_y, 2 = touch_nr, 3 = x_pre, 4 = y_pre */
+	unsigned int touch_data[5];
+	bool touch_x_called;
+	bool touch_y_called;
+	bool touch_cnt;
+	bool exec_count;
+};
 
 #endif	/* _LINUX_DOUBLETAP2WAKE_H */
