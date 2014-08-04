@@ -90,6 +90,7 @@ static void doubletap2wake_reset(void)
 	d2wdata->tap_time_pre = 0;
 	d2wdata->touch_data[3] = 0;
 	d2wdata->touch_data[4] = 0;
+        d2wdata->touch_cnt = false;
 }
 
 /* PowerKey work func */
@@ -148,28 +149,38 @@ static void detect_doubletap2wake(int x, int y, bool st)
                 x, y, (single_touch) ? "true" : "false");
 #endif
 	if ((single_touch) && (dt2w_switch > 0) && (d2wdata->exec_count) && (d2wdata->touch_cnt)) {
-		d2wdata->touch_cnt = false;
+		/*d2wdata->touch_cnt = false;*/
+		
+		if ((ktime_to_ms(ktime_get()) - d2wdata->tap_time_pre) >= DT2W_TIME)
+			doubletap2wake_reset();
+
 		if (d2wdata->touch_data[2] == 0) {
 			new_touch(x, y);
 		} else if (d2wdata->touch_data[2] == 1) {
 			if ((calc_feather(x, d2wdata->touch_data[3]) < DT2W_FEATHER) &&
-			    (calc_feather(y, d2wdata->touch_data[4]) < DT2W_FEATHER) &&
+			    /*(calc_feather(y, d2wdata->touch_data[4]) < DT2W_FEATHER) &&
 			    ((ktime_to_ms(ktime_get()) - d2wdata->tap_time_pre) < DT2W_TIME))
 				d2wdata->touch_data[2]++;
-			else {
+			else {*/
+                            (calc_feather(y, d2wdata->touch_data[4]) < DT2W_FEATHER)) {
+				pr_info(LOGTAG"ON\n");
+				d2wdata->exec_count = false;
+				doubletap2wake_pwrtrigger();
 				doubletap2wake_reset();
-				new_touch(x, y);
+			/*} else {
+				doubletap2wake_reset();
+				new_touch(x, y);*/
 			}
 		} else {
 			doubletap2wake_reset();
 			new_touch(x, y);
 		}
-		if ((d2wdata->touch_data[2] > 1)) {
+		/*if ((d2wdata->touch_data[2] > 1)) {
 			pr_info(LOGTAG"ON\n");
 			d2wdata->exec_count = false;
 			doubletap2wake_pwrtrigger();
 			doubletap2wake_reset();
-		}
+		}*/
 	}
 }
 
@@ -213,7 +224,8 @@ static void dt2w_input_event(struct input_handle *handle, unsigned int type,
 		d2wdata->touch_y_called = true;
 	}
 
-	if (d2wdata->touch_x_called || d2wdata->touch_y_called) {
+	/*if (d2wdata->touch_x_called || d2wdata->touch_y_called) {*/
+        if ((d2wdata->touch_x_called || d2wdata->touch_y_called) && d2wdata->touch_cnt) {
 		d2wdata->touch_x_called = false;
 		d2wdata->touch_y_called = false;
 		queue_work(system_power_efficient_wq, &dt2w_input_work);
