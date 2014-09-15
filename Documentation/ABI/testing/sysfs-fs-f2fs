@@ -24,6 +24,7 @@ Date:		July 2013
 Contact:	"Namjae Jeon" <namjae.jeon@samsung.com>
 Description:
 		 Controls the victim selection policy for garbage collection.
+<<<<<<< HEAD
 
 What:		/sys/fs/f2fs/<disk>/reclaim_segments
 Date:		October 2013
@@ -55,3 +56,5 @@ Date:		January 2014
 Contact:	"Jaegeuk Kim" <jaegeuk.kim@samsung.com>
 Description:
 		 Controls the number of trials to find a victim segment.
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel

@@ -120,8 +120,11 @@ active_logs=%u         Support configuring the number of active logs. In the
 disable_ext_identify   Disable the extension list configured by mkfs, so f2fs
                        does not aware of cold files such as media files.
 inline_xattr           Enable the inline xattrs feature.
+<<<<<<< HEAD
 inline_data            Enable the inline data feature: New created small(<~3.4k)
                        files can be written into inode block.
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 ================================================================================
 DEBUGFS ENTRIES
@@ -173,6 +176,7 @@ Files in /sys/fs/f2fs/<devname>
 			      conduct checkpoint to reclaim the prefree segments
 			      to free segments. By default, 100 segments, 200MB.
 
+<<<<<<< HEAD
  max_small_discards	      This parameter controls the number of discard
 			      commands that consist small blocks less than 2MB.
 			      The candidates to be discarded are cached until
@@ -195,6 +199,8 @@ Files in /sys/fs/f2fs/<devname>
 			      cleaning operations. The default value is 4096
 			      which covers 8GB block address range.
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 ================================================================================
 USAGE
 ================================================================================

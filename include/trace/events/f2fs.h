@@ -16,6 +16,7 @@
 		{ META,		"META" },				\
 		{ META_FLUSH,	"META_FLUSH" })
 
+<<<<<<< HEAD
 #define F2FS_BIO_MASK(t)	(t & (READA | WRITE_FLUSH_FUA))
 #define F2FS_BIO_EXTRA_MASK(t)	(t & (REQ_META | REQ_PRIO))
 
@@ -38,6 +39,17 @@
 		{ REQ_PRIO, 		"(P)" },			\
 		{ REQ_META | REQ_PRIO,	"(MP)" },			\
 		{ 0, " \b" })
+=======
+#define show_bio_type(type)						\
+	__print_symbolic(type,						\
+		{ READ, 	"READ" },				\
+		{ READA, 	"READAHEAD" },				\
+		{ READ_SYNC, 	"READ_SYNC" },				\
+		{ WRITE, 	"WRITE" },				\
+		{ WRITE_SYNC, 	"WRITE_SYNC" },				\
+		{ WRITE_FLUSH,	"WRITE_FLUSH" },			\
+		{ WRITE_FUA, 	"WRITE_FUA" })
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 #define show_data_type(type)						\
 	__print_symbolic(type,						\
@@ -434,7 +446,11 @@ TRACE_EVENT(f2fs_truncate_partial_nodes,
 		__entry->err)
 );
 
+<<<<<<< HEAD
 TRACE_EVENT_CONDITION(f2fs_submit_page_bio,
+=======
+TRACE_EVENT_CONDITION(f2fs_readpage,
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	TP_PROTO(struct page *page, sector_t blkaddr, int type),
 
@@ -459,7 +475,11 @@ TRACE_EVENT_CONDITION(f2fs_submit_page_bio,
 	),
 
 	TP_printk("dev = (%d,%d), ino = %lu, page_index = 0x%lx, "
+<<<<<<< HEAD
 		"blkaddr = 0x%llx, bio_type = %s%s",
+=======
+		"blkaddr = 0x%llx, bio_type = %s",
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		show_dev_ino(__entry),
 		(unsigned long)__entry->index,
 		(unsigned long long)__entry->blkaddr,
@@ -611,6 +631,7 @@ TRACE_EVENT(f2fs_reserve_new_block,
 		__entry->ofs_in_node)
 );
 
+<<<<<<< HEAD
 DECLARE_EVENT_CLASS(f2fs__submit_bio,
 
 	TP_PROTO(struct super_block *sb, int rw, int type, struct bio *bio),
@@ -621,26 +642,51 @@ DECLARE_EVENT_CLASS(f2fs__submit_bio,
 		__field(dev_t,	dev)
 		__field(int,	rw)
 		__field(int,	type)
+=======
+TRACE_EVENT(f2fs_do_submit_bio,
+
+	TP_PROTO(struct super_block *sb, int btype, bool sync, struct bio *bio),
+
+	TP_ARGS(sb, btype, sync, bio),
+
+	TP_STRUCT__entry(
+		__field(dev_t,	dev)
+		__field(int,	btype)
+		__field(bool,	sync)
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		__field(sector_t,	sector)
 		__field(unsigned int,	size)
 	),
 
 	TP_fast_assign(
 		__entry->dev		= sb->s_dev;
+<<<<<<< HEAD
 		__entry->rw		= rw;
 		__entry->type		= type;
+=======
+		__entry->btype		= btype;
+		__entry->sync		= sync;
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		__entry->sector		= bio->bi_sector;
 		__entry->size		= bio->bi_size;
 	),
 
+<<<<<<< HEAD
 	TP_printk("dev = (%d,%d), %s%s, %s, sector = %lld, size = %u",
 		show_dev(__entry),
 		show_bio_type(__entry->rw),
 		show_block_type(__entry->type),
+=======
+	TP_printk("dev = (%d,%d), type = %s, io = %s, sector = %lld, size = %u",
+		show_dev(__entry),
+		show_block_type(__entry->btype),
+		__entry->sync ? "sync" : "no sync",
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		(unsigned long long)__entry->sector,
 		__entry->size)
 );
 
+<<<<<<< HEAD
 DEFINE_EVENT_CONDITION(f2fs__submit_bio, f2fs_submit_write_bio,
 
 	TP_PROTO(struct super_block *sb, int rw, int type, struct bio *bio),
@@ -659,6 +705,8 @@ DEFINE_EVENT_CONDITION(f2fs__submit_bio, f2fs_submit_read_bio,
 	TP_CONDITION(bio)
 );
 
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 DECLARE_EVENT_CLASS(f2fs__page,
 
 	TP_PROTO(struct page *page, int type),
@@ -705,16 +753,27 @@ DEFINE_EVENT(f2fs__page, f2fs_vm_page_mkwrite,
 	TP_ARGS(page, type)
 );
 
+<<<<<<< HEAD
 TRACE_EVENT(f2fs_submit_page_mbio,
 
 	TP_PROTO(struct page *page, int rw, int type, block_t blk_addr),
 
 	TP_ARGS(page, rw, type, blk_addr),
+=======
+TRACE_EVENT(f2fs_submit_write_page,
+
+	TP_PROTO(struct page *page, block_t blk_addr, int type),
+
+	TP_ARGS(page, blk_addr, type),
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 	TP_STRUCT__entry(
 		__field(dev_t,	dev)
 		__field(ino_t,	ino)
+<<<<<<< HEAD
 		__field(int, rw)
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		__field(int, type)
 		__field(pgoff_t, index)
 		__field(block_t, block)
@@ -723,15 +782,23 @@ TRACE_EVENT(f2fs_submit_page_mbio,
 	TP_fast_assign(
 		__entry->dev	= page->mapping->host->i_sb->s_dev;
 		__entry->ino	= page->mapping->host->i_ino;
+<<<<<<< HEAD
 		__entry->rw	= rw;
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		__entry->type	= type;
 		__entry->index	= page->index;
 		__entry->block	= blk_addr;
 	),
 
+<<<<<<< HEAD
 	TP_printk("dev = (%d,%d), ino = %lu, %s%s, %s, index = %lu, blkaddr = 0x%llx",
 		show_dev_ino(__entry),
 		show_bio_type(__entry->rw),
+=======
+	TP_printk("dev = (%d,%d), ino = %lu, %s, index = %lu, blkaddr = 0x%llx",
+		show_dev_ino(__entry),
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 		show_block_type(__entry->type),
 		(unsigned long)__entry->index,
 		(unsigned long long)__entry->block)
@@ -761,6 +828,7 @@ TRACE_EVENT(f2fs_write_checkpoint,
 		__entry->msg)
 );
 
+<<<<<<< HEAD
 TRACE_EVENT(f2fs_issue_discard,
 
 	TP_PROTO(struct super_block *sb, block_t blkstart, block_t blklen),
@@ -784,6 +852,8 @@ TRACE_EVENT(f2fs_issue_discard,
 		(unsigned long long)__entry->blkstart,
 		(unsigned long long)__entry->blklen)
 );
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 #endif /* _TRACE_F2FS_H */
 
  /* This part must be outside protection */

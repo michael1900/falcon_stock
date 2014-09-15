@@ -153,6 +153,7 @@ struct f2fs_extent {
 #define	NODE_DIND_BLOCK		(DEF_ADDRS_PER_INODE + 5)
 
 #define F2FS_INLINE_XATTR	0x01	/* file inline xattr flag */
+<<<<<<< HEAD
 #define F2FS_INLINE_DATA	0x02	/* file inline data flag */
 
 #define MAX_INLINE_DATA		(sizeof(__le32) * (DEF_ADDRS_PER_INODE - \
@@ -160,6 +161,8 @@ struct f2fs_extent {
 
 #define INLINE_DATA_OFFSET	(PAGE_CACHE_SIZE - sizeof(struct node_footer) \
 			- sizeof(__le32) * (DEF_ADDRS_PER_INODE + 5 - 1))
+=======
+>>>>>>> d57d420... f2fs: Pull in from upstream 3.13 kernel
 
 struct f2fs_inode {
 	__le16 i_mode;			/* file mode */
