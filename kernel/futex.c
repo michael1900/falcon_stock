@@ -61,6 +61,7 @@
 #include <linux/nsproxy.h>
 #include <linux/ptrace.h>
 #include <linux/bootmem.h>
+#include <linux/hugetlb.h>
 
 #include <asm/futex.h>
 
@@ -515,7 +516,7 @@ again:
 	} else {
 		key->both.offset |= FUT_OFF_INODE; /* inode-based key */
 		key->shared.inode = page_head->mapping->host;
-		key->shared.pgoff = page_head->index;
+		key->shared.pgoff = basepage_index(page);
 	}
 
 	get_futex_key_refs(key); /* implies MB (B) */
@@ -1451,15 +1452,9 @@ void requeue_pi_wake_futex(struct futex_q *q, union futex_key *key,
  * then direct futex_lock_pi_atomic() to force setting the FUTEX_WAITERS bit.
  * hb1 and hb2 must be held by the caller.
  *
-<<<<<<< HEAD
  * Returns:
  *  0 - failed to acquire the lock atomicly
  *  1 - acquired the lock
-=======
- * Return:
- *  0 - failed to acquire the lock atomically;
- * >0 - acquired the lock, return value is vpid of the top_waiter
->>>>>>> 866293e... futex: Add another early deadlock detection check
  * <0 - error
  */
 static int futex_proxy_trylock_atomic(u32 __user *pifutex,
