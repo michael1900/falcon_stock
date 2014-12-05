@@ -123,6 +123,7 @@ static noinline void __save_stack_trace(struct task_struct *tsk,
 		frame.sp = thread_saved_sp(tsk);
 		frame.lr = 0;		/* recovered from the stack */
 		frame.pc = thread_saved_pc(tsk);
+#endif
 	} else {
 		register unsigned long current_sp asm ("sp");
 
