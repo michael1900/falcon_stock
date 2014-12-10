@@ -61,8 +61,8 @@ MODULE_LICENSE("GPLv2");
 #define t2u_PWRKEY_DUR		20
 #define t2u_FEATHER		200
 #define t2u_TIME		600 //gap(in ms) allowed between 'each' touch (for 4 letter pattern - 4x600 =2400 ms)
-#define VERTICAL_SCREEN_MIDWAY  480 // Your device's vertical resolution / 2
-#define HORIZONTAL_SCREEN_MIDWAY  270 // Your device's horizontal resolution / 2
+#define VERTICAL_SCREEN_MIDWAY  640 // Your device's vertical resolution / 2
+#define HORIZONTAL_SCREEN_MIDWAY  360 // Your device's horizontal resolution / 2
 
 /* Resources */
 int t2u_switch = t2u_DEFAULT;
