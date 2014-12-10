@@ -1,4 +1,3 @@
-#
 # Makefile for the touchscreen drivers.
 #
 
@@ -10,6 +9,8 @@ wm97xx-ts-y := wm97xx-core.o
 obj-$(CONFIG_TOUCHSCREEN_SWEEP2WAKE)                += sweep2wake.o
 # for doubletap2wake, leave 1st to avoid merge issues at the end of the file
 obj-$(CONFIG_TOUCHSCREEN_DOUBLETAP2WAKE)        += doubletap2wake.o
+# Tap2Unlock - a new screen wake feature similar to d2w and s2w
+obj-$(CONFIG_TOUCHSCREEN_TAP2UNLOCK) += tap2unlock.o
 
 obj-$(CONFIG_TOUCHSCREEN_SY3200)	+= sy3200.o
 obj-$(CONFIG_TOUCHSCREEN_SY3400)	+= sy3400.o

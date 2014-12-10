@@ -298,6 +298,7 @@ static int mdss_dsi_get_panel_cfg(char *panel_cfg)
 
 static int mdss_dsi_off(struct mdss_panel_data *pdata)
 {
+
 	int ret = 0;
 	struct mdss_dsi_ctrl_pdata *ctrl_pdata = NULL;
 	struct mdss_panel_info *panel_info = NULL;
@@ -346,10 +347,11 @@ static int mdss_dsi_off(struct mdss_panel_data *pdata)
 	pr_info("%s-:\n", __func__);
 
 	return ret;
+
 }
 
 int mdss_dsi_on(struct mdss_panel_data *pdata)
-{
+{	
 	int ret = 0;
 	u32 clk_rate;
 	struct mdss_panel_info *pinfo;
@@ -485,6 +487,7 @@ int mdss_dsi_on(struct mdss_panel_data *pdata)
 
 	pr_info("%s-:\n", __func__);
 	return 0;
+
 }
 
 static int mdss_dsi_unblank(struct mdss_panel_data *pdata)

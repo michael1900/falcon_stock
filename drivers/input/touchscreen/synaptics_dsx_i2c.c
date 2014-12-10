@@ -43,6 +43,9 @@
 #include <linux/input/doubletap2wake.h>
 extern bool ct_suspended;
 extern bool prox_covered;
+#ifdef CONFIG_TOUCHSCREEN_TAP2UNLOCK
+#include <linux/input/tap2unlock.h>
+#endif
 #endif
 
 #define DRIVER_NAME "synaptics_dsx_i2c"
@@ -3697,7 +3700,15 @@ static int synaptics_rmi4_suspend(struct device *dev)
 			rmi4_data->board;
 
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
-	if (prox_covered) {	
+pr_info("t2u :suspend called ,t2u_allow %d , t2u_scr_suspended %d ", t2u_allow, t2u_scr_suspended);
+	 if (t2u_switch > 0 && t2u_allow == false && t2u_scr_suspended == false) {
+		pr_info("t2u : going to t2u_force_suspend");
+		goto t2u_force_suspend;
+	}
+	 if (s2w_switch > 0 || dt2w_switch > 0 || t2u_switch > 0) {
+
+	 if (prox_covered) {
+	 t2u_force_suspend:
 #endif
 	synaptics_dsx_sensor_state(rmi4_data, STATE_SUSPEND);
 	rmi4_data->poweron = false;
@@ -3721,9 +3732,11 @@ static int synaptics_rmi4_suspend(struct device *dev)
 		rmi4_data->touch_stopped = true;
 	}
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+	} else {
 			pr_info("suspend avoided!\n");
 			return 0;
 	}
+ 	}
 #endif
 
 	return 0;
@@ -3749,6 +3762,15 @@ void touch_suspend(void)
 static int synaptics_rmi4_resume(struct device *dev)
 {
 	struct synaptics_rmi4_data *rmi4_data = dev_get_drvdata(dev);
+
+#ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
+pr_info("t2u :suspend called ,t2u_allow %d , t2u_scr_suspended %d ", t2u_allow, t2u_scr_suspended);
+	 if (t2u_switch > 0 && t2u_allow == false && t2u_scr_suspended == false) {
+		pr_info("t2u : touch sensor awake blocked by t2u protect");
+		return 0;
+	}
+#endif
+
 
 	synaptics_dsx_resumeinfo_start(rmi4_data);
 
@@ -3802,6 +3824,8 @@ static int synaptics_rmi4_resume(struct device *dev)
 	synaptics_dsx_resumeinfo_finish(rmi4_data);
 
 	return 0;
+
+
 }
 
 #ifdef CONFIG_TOUCHSCREEN_PREVENT_SLEEP
